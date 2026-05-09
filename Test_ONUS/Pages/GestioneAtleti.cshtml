@@ -1,0 +1,337 @@
+﻿@page
+@model Test_ONUS.Pages.GestioneAtletiModel
+@{
+    ViewData["Title"] = "Gestione Squadra";
+}
+
+<style>
+    /* Stile per l'area di upload Drag & Drop */
+    .upload-area {
+        border: 2px dashed #6c757d;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        background-color: #2a2a2a;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+        .upload-area:hover, .upload-area.dragover {
+            border-color: #ff4757; /* Rosso Accento */
+            background-color: #333;
+        }
+
+        .upload-area input[type="file"] {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+    .preview-img {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #fff;
+        margin-bottom: 10px;
+        display: none; /* Nascosto finché non c'è un file */
+    }
+
+    .icon-placeholder {
+        font-size: 2rem;
+        color: #6c757d;
+        margin-bottom: 5px;
+    }
+</style>
+<div class="container mt-4">
+    <div class="card bg-dark text-white border-secondary mb-4">
+        <div class="card-body">
+            <h4 class="card-title text-danger">@Localizer["Gestione Squadra"]</h4>
+            <form method="post" asp-page-handler="AggiornaSquadra" class="row g-3 align-items-center mt-2">
+                <div class="col-auto">
+                    <label class="col-form-label">@Localizer["Nome Squadra"]:</label>
+                </div>
+                <div class="col-auto">
+                    <input type="text" class="form-control bg-secondary text-white border-0" asp-for="NomeSquadra" />
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-warning">@Localizer["Aggiorna Nome"]</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <h3 class="text-uppercase fw-bold">@Localizer["La tua Rosa"]</h3>
+</div>
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <h2 class="text-warning fw-bold text-uppercase tracking-wide border-start border-4 border-warning ps-3">
+            Gestione Rosa Giocatori
+        </h2>
+        <button class="btn btn-success fw-bold shadow-lg" onclick="apriModaleAtleta(0, '', '', '', '', true)">
+            + NUOVO GIOCATORE
+        </button>
+    </div>
+
+    <div class="card border-0 shadow-lg overflow-hidden" style="background: #2c2c2c;">
+        <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle m-0">
+                <thead>
+                    <tr class="text-uppercase text-muted small ls-1">
+                        <th class="py-3 ps-4">Avatar</th>
+                        <th>Nome & Cognome</th>
+                        <th>Credenziali</th>
+                        <th class="text-center">Stato</th>
+                        <th class="text-end pe-4">Azioni</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var atleta in Model.Atleti)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <img src="@atleta.FotoUrl" class="rounded-circle border border-secondary" width="50" height="50" style="object-fit: cover;">
+                            </td>
+                            <td>
+                                <h5 class="m-0 text-white">@atleta.Nome @atleta.Cognome</h5>
+                                <div class="text-muted small">
+                                    <i class="bi bi-rulers"></i> @atleta.Altezza cm |
+                                    <i class="bi bi-speedometer2"></i> @atleta.Peso kg
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex flex-column">
+                                    <span class="badge bg-secondary w-auto align-self-start mb-1">User: @atleta.Nome</span>
+                                    <span class="badge bg-dark border border-secondary w-auto align-self-start">Pass: @atleta.Password</span>
+                                </div>
+                            </td>
+                            <td class="text-center align-middle">
+                                @if (!atleta.IsAttivo)
+                                {
+                                    <span class="badge bg-secondary p-2 shadow-sm">INATTIVO</span>
+                                }
+                                else if (atleta.IsInfortunato)
+                                {
+                                    <span class="badge bg-danger p-2 shadow-sm fw-bold tracking-wide" style="letter-spacing: 1px;">INFORTUNATO</span>
+                                }
+                                else if (atleta.IsInRiabilitazione)
+                                {
+                                    <span class="badge bg-warning text-dark p-2 shadow-sm fw-bold tracking-wide" style="letter-spacing: 1px;">IN RIABILITAZIONE</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success p-2 shadow-sm fw-bold tracking-wide" style="letter-spacing: 1px;">DISPONIBILE</span>
+                                }
+                            </td>
+                            <td class="text-end pe-4">
+                                <button class="btn btn-sm btn-outline-info me-2"
+                                        onclick="apriModaleAtleta(@atleta.Id, '@atleta.Nome', '@atleta.Cognome', '@atleta.Password', '@atleta.FotoUrl', @atleta.IsAttivo.ToString().ToLower(), @atleta.IsInfortunato.ToString().ToLower(), @atleta.IsInRiabilitazione.ToString().ToLower(), '@(atleta.DescrizioneInfortunio?.Replace("'", "\\'") ?? "")', @atleta.Altezza, @atleta.Peso)">
+                                    ✏️ Modifica
+                                </button>
+
+                                <form method="post" asp-page-handler="Delete" asp-route-id="@atleta.Id" class="d-inline" onsubmit="return confirm('Eliminare definitivamente?');">
+                                    <button class="btn btn-sm btn-outline-danger">🗑️</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="atletaModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark border border-secondary text-white shadow-lg">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title fw-bold text-warning" id="modalTitle">Gestione Giocatore</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" asp-page-handler="Save" enctype="multipart/form-data">
+                    <input type="hidden" id="atletaId" name="Id" value="0" />
+                    <input type="hidden" id="fotoUrlCorrente" name="FotoUrlCorrente" />
+
+                    <div class="row g-3">
+                        <div class="col-12 mb-2">
+                            <label class="form-label text-muted small">Foto Profilo</label>
+                            <div class="upload-area" id="dropZone">
+                                <input type="file" id="uploadImmagine" name="UploadImmagine" accept="image/*" onchange="mostraAnteprima(this)">
+
+                                <div id="uploadTextContent">
+                                    <div class="icon-placeholder">📷</div>
+                                    <p class="m-0 text-muted small">Trascina qui l'immagine o clicca per caricare</p>
+                                </div>
+
+                                <img id="previewImg" class="preview-img mx-auto mt-2" src="" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small">Nome</label>
+                            <input type="text" id="nome" name="Nome" class="form-control bg-secondary text-white border-0" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small">Cognome</label>
+                            <input type="text" id="cognome" name="Cognome" class="form-control bg-secondary text-white border-0" required />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small">Altezza (cm)</label>
+                            <input type="number" id="altezza" name="Altezza" class="form-control bg-secondary text-white border-0" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small">Peso (kg)</label>
+                            <input type="number" step="0.1" id="peso" name="Peso" class="form-control bg-secondary text-white border-0" required />
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label text-muted small">Password Accesso</label>
+                            <input type="text" id="password" name="Password" class="form-control bg-secondary text-white border-0" required />
+                        </div>
+
+                        <div class="col-md-12">
+                            <div class="form-check form-switch mt-2">
+                                <input class="form-check-input" type="checkbox" id="isAttivo" name="IsAttivo" value="true" checked>
+                                <label class="form-check-label" for="isAttivo">Giocatore Attivo</label>
+                            </div>
+                        </div>
+
+                        <div class="col-12 mt-4 pt-3 border-top border-secondary">
+                            <h6 class="text-warning text-uppercase mb-3">Stato Fisico</h6>
+                            
+                            <div class="d-flex gap-4 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="isInfortunato" name="IsInfortunato" value="true" onchange="gestisciStatoFisico('infortunato')">
+                                    <label class="form-check-label text-danger" for="isInfortunato">Infortunato</label>
+                                </div>
+                                
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="isInRiabilitazione" name="IsInRiabilitazione" value="true" onchange="gestisciStatoFisico('riabilitazione')">
+                                    <label class="form-check-label text-warning" for="isInRiabilitazione">In Riabilitazione</label>
+                                </div>
+                            </div>
+
+                            <div class="mt-2" id="boxDescrizioneInfortunio" style="display: none;">
+                                <label class="form-label text-muted small">Descrizione Infortunio (Visibile nel Pop-up)</label>
+                                <textarea id="descrizioneInfortunio" name="DescrizioneInfortunio" class="form-control bg-secondary text-white border-0" rows="3" placeholder="Inserisci i dettagli..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-warning fw-bold">SALVA GIOCATORE</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 1. NUOVA FUNZIONE: Controlla se mostrare o nascondere le note
+    function aggiornaVisibilitaNote() {
+        const isInfortunato = document.getElementById('isInfortunato').checked;
+        const isInRiabilitazione = document.getElementById('isInRiabilitazione').checked;
+        const boxNote = document.getElementById('boxDescrizioneInfortunio');
+        const txtNote = document.getElementById('descrizioneInfortunio');
+
+        if (isInfortunato || isInRiabilitazione) {
+            // Mostra il riquadro con un'animazione fluida (stile Bootstrap)
+            boxNote.style.display = 'block';
+        } else {
+            // Nascondi e svuota il testo per evitare salvataggi accidentali
+            boxNote.style.display = 'none';
+            txtNote.value = '';
+        }
+    }
+
+    // 2. MODIFICA LA FUNZIONE ESISTENTE DEI TOGGLE
+    function gestisciStatoFisico(tipo) {
+        const infortunato = document.getElementById('isInfortunato');
+        const riabilitazione = document.getElementById('isInRiabilitazione');
+
+        if (tipo === 'infortunato' && infortunato.checked) {
+            riabilitazione.checked = false;
+        } else if (tipo === 'riabilitazione' && riabilitazione.checked) {
+            infortunato.checked = false;
+        }
+        
+        // Chiama l'aggiornamento visivo ogni volta che clicchi uno switch!
+        aggiornaVisibilitaNote();
+    }
+    // Funzione per gestire il Drag & Drop visuale
+    const dropZone = document.getElementById('dropZone');
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => {
+            dropZone.classList.remove('dragover');
+        }, false);
+    });
+    // Mostra anteprima quando si seleziona un file
+    function mostraAnteprima(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('previewImg').src = e.target.result;
+                document.getElementById('previewImg').style.display = 'block';
+                document.getElementById('uploadTextContent').style.display = 'none';
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    // Funzione apriModaleAtleta AGGIORNATA
+        // NOTA: devi aggiornare anche il bottone "Modifica" nella tabella HTML per passare questi nuovi parametri!
+        function apriModaleAtleta(id, nome, cognome, password, foto, attivo, infortunato = false, riabilitazione = false, descrizione = '') {
+            document.getElementById('atletaId').value = id;
+            document.getElementById('nome').value = nome;
+            document.getElementById('cognome').value = cognome;
+            document.getElementById('password').value = password;
+            document.getElementById('isAttivo').checked = attivo;
+
+            // Nuovi campi antropometrici
+    document.getElementById('altezza').value = altezza;
+    document.getElementById('peso').value = peso;
+
+            // Nuovi campi stato fisico
+            document.getElementById('isInfortunato').checked = infortunato;
+            document.getElementById('isInRiabilitazione').checked = riabilitazione;
+            document.getElementById('descrizioneInfortunio').value = descrizione;
+
+            aggiornaVisibilitaNote();
+
+            // Gestione Foto
+            document.getElementById('fotoUrlCorrente').value = foto;
+
+            // Reset visuale upload
+            document.getElementById('uploadImmagine').value = '';
+            if (foto && foto !== '/img/default-avatar.png') {
+                document.getElementById('previewImg').src = foto;
+                document.getElementById('previewImg').style.display = 'block';
+                document.getElementById('uploadTextContent').style.display = 'none';
+            } else {
+                document.getElementById('previewImg').style.display = 'none';
+                document.getElementById('uploadTextContent').style.display = 'block';
+            }
+
+            document.getElementById('modalTitle').innerText = id === 0 ? "Nuovo Giocatore" : "Modifica " + nome;
+        
+            // Inizializza o recupera il modale
+            var myModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('atletaModal'));
+            myModal.show();
+        }
+</script>

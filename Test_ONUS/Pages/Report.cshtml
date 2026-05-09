@@ -1,0 +1,161 @@
+﻿@page
+@model Test_ONUS.Pages.ReportModel
+@{
+    ViewData["Title"] = "Report PDF";
+}
+
+<div class="container py-4">
+    <h2 class="mb-4 text-white fw-bold text-uppercase border-start border-4 border-success ps-3">Generazione Report</h2>
+
+    <div class="card mb-4 border-0 shadow-lg" style="background: #2c2c2c;">
+        <div class="card-body p-4 text-white">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Atleta</label>
+                    <select name="atletaId" class="form-select bg-dark text-white border-secondary">
+                        <option value="tutti">Tutta la squadra (Team)</option>
+                        @foreach (var a in Model.Atleti)
+                        {
+                            <option value="@a.Id" selected="@(Request.Query["atletaId"] == a.Id.ToString() ? "selected" : null)">@a.Nome @a.Cognome</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Periodo</label>
+                    <select name="filtroTempo" class="form-select bg-dark text-white border-secondary">
+                        <option value="ultimoMese">Ultimo Mese</option>
+                        <option value="ultimaSettimana">Ultima Settimana</option>
+                        <option value="meseCorrente">Mese Corrente</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-grid">
+                    <button type="submit" class="btn btn-success fw-bold">📄 GENERA REPORT</button>
+                </div>
+
+                <div class="col-12 mt-3">
+                    <label class="form-label fw-bold d-block">Seleziona parametri opzionali:</label>
+                    <div class="d-flex flex-wrap gap-4 bg-black bg-opacity-25 p-3 rounded border border-secondary">
+                        <div class="form-check">
+                    
+                        </div>
+                        @foreach (var p in Model.ParametriExtra)
+                        {
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="ParametriSelezionatiIds" value="@p.Id" id="p-@p.Id"
+                                @(Model.ParametriSelezionatiIds.Contains(p.Id) ? "checked" : "")>
+                                <label class="form-check-label" for="p-@p.Id">@p.Nome</label>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (Model.MostraAnteprima)
+    {
+        <div class="text-end mb-3">
+            <button class="btn btn-primary px-5 fw-bold" onclick="scaricaPDF()">⬇️ SCARICA PDF</button>
+        </div>
+
+        <div id="foglioPDF" class="bg-white text-dark p-5 shadow-lg mx-auto" style="width: 210mm; min-height: 297mm; font-family: Arial, sans-serif;">
+            
+            <div class="d-flex justify-content-between align-items-end border-bottom border-dark pb-3 mb-4">
+                <div>
+                    <h5 class="text-muted text-uppercase mb-1" style="letter-spacing: 2px;">Overall status</h5>
+                    <h1 class="fw-bold m-0" style="color: #2c3e50;">ONUS report</h1>
+                </div>
+                <div class="text-end">
+                    <p class="text-muted small mb-1">Export: @DateTime.Now.ToString("dd.MM.yyyy")</p>
+                    <h4 class="fw-bold text-danger m-0">@Model.NomeAtleta</h4>
+                </div>
+            </div>
+
+            <div class="row mb-5 text-center bg-light py-2 rounded g-0">
+                <div class="col-4 border-end"> <small class="text-muted d-block">FILTER</small> <strong>@Model.FiltroTesto</strong> </div>
+                <div class="col-4 border-end"> <small class="text-muted d-block">FROM</small> <strong>@Model.DataInizio</strong> </div>
+                <div class="col-4"> <small class="text-muted d-block">TO</small> <strong>@Model.DataFine</strong> </div>
+            </div>
+
+            <div class="row mb-5 text-center d-flex justify-content-center g-0 border-top border-bottom py-4">
+                <div class="col p-2">
+                    <h6 class="text-muted mb-2">RPE</h6>
+                    <h2 class="fw-bold mb-1">@Model.RpeCorrente</h2>
+                    <small class="@(Model.RpeVariazione >= 0 ? "text-danger" : "text-success") fw-bold">
+                        @(Model.RpeVariazione >= 0 ? "↑" : "↓") @Math.Abs(Model.RpeVariazione)
+                    </small>
+                </div>
+
+                @if (Model.IncludiLoad)
+                {
+                    <div class="col p-2 border-start">
+                        <h6 class="text-muted mb-2">LOAD</h6>
+                        <h2 class="fw-bold mb-1">@Model.LoadCorrente</h2>
+                        <small class="@(Model.LoadVariazionePercentuale >= 0 ? "text-danger" : "text-success") fw-bold">
+                            @(Model.LoadVariazionePercentuale >= 0 ? "↑" : "↓") @Math.Abs(Math.Round(Model.LoadVariazionePercentuale, 0))%
+                        </small>
+                    </div>
+                }
+
+                @foreach (var pId in Model.ParametriSelezionatiIds)
+                {
+                    var p = Model.ParametriExtra.FirstOrDefault(x => x.Id == pId);
+                    if (p != null)
+                    {
+                        <div class="col p-2 border-start">
+                            <h6 class="text-muted mb-2">@p.Nome.ToUpper()</h6>
+                            <h2 class="fw-bold mb-1">@Model.MedieDinamiche[pId]</h2>
+                            <small class="@(Model.VariazioniDinamiche[pId] >= 0 ? "text-success" : "text-danger") fw-bold">
+                                @(Model.VariazioniDinamiche[pId] >= 0 ? "↑" : "↓") @Math.Abs(Model.VariazioniDinamiche[pId])
+                            </small>
+                        </div>
+                    }
+                }
+            </div>
+
+            @if (Model.IncludiLoad)
+            {
+                <div class="mt-4">
+                    <h5 class="text-uppercase text-muted border-bottom pb-2 mb-4">Trend - Player Load</h5>
+                    <div style="height: 300px;"><canvas id="graficoReport"></canvas></div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    @if (Model.MostraAnteprima && Model.IncludiLoad)
+    {
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+            const ctx = document.getElementById('graficoReport').getContext('2d');
+            new Chart(ctx, {
+            type: 'bar',
+            data: {
+            labels: @Html.Raw(Json.Serialize(Model.EtichetteDate)),
+            datasets: [{ label: 'Load', data: @Html.Raw(Json.Serialize(Model.DatiLoad)), backgroundColor: '#e74c3c' }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+            });
+        </script>
+    }
+    <script>
+        function scaricaPDF() {
+        const element = document.getElementById('foglioPDF');
+        html2pdf().set({
+        margin: 2,
+        filename: 'ONUS_Report_@(DateTime.Now.ToString("yyyyMMdd")).pdf',
+        html2canvas: {
+        scale: 2,
+        //windowWidth: element.scrollWidth // Questo è il vero trucco magico per non far tagliare i testi a destra!
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        }).from(element).save();
+        }
+    </script>
+}

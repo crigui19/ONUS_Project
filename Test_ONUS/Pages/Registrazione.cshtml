@@ -1,0 +1,46 @@
+﻿@page
+@model Test_ONUS.Pages.RegistrazioneModel
+@{
+    ViewData["Title"] = "Registrazione Preparatore";
+}
+
+<div class="container d-flex align-items-center justify-content-center" style="min-height: 80vh;">
+    <div class="card shadow-lg p-4 border-0" style="width: 100%; max-width: 500px; background: #1e1e1e; color: white;">
+        <h2 class="text-center text-danger fw-bold mb-4">REGISTRAZIONE COACH</h2>
+        
+        <form method="post">
+            <div class="row g-3">
+                <div class="col-md-6 form-floating mb-3">
+                    <input asp-for="Input.Nome" class="form-control bg-dark text-white border-secondary" placeholder="Nome" required />
+                    <label asp-for="Input.Nome" class="ms-2">Nome</label>
+                </div>
+                <div class="col-md-6 form-floating mb-3">
+                    <input asp-for="Input.Cognome" class="form-control bg-dark text-white border-secondary" placeholder="Cognome" required />
+                    <label asp-for="Input.Cognome" class="ms-2">Cognome</label>
+                </div>
+            </div>
+
+            <div class="form-floating mb-3 text-dark">
+                <input asp-for="Input.NomeSquadra" class="form-control bg-dark text-white border-secondary" placeholder="Nome Squadra" required />
+                <label asp-for="Input.NomeSquadra" class="ms-2 text-white">Nome della Squadra</label>
+                <div class="form-text text-white-50 small">Verrà creata una nuova squadra con questo nome.</div>
+            </div>
+
+            <div class="form-floating mb-4 text-dark">
+                <input asp-for="Input.Password" type="password" class="form-control bg-dark text-white border-secondary" placeholder="Password" required />
+                <label asp-for="Input.Password" class="ms-2 text-white">Password</label>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.ErrorMsg))
+            {
+                <div class="alert alert-danger py-2 mb-3">@Model.ErrorMsg</div>
+            }
+
+            <button type="submit" class="btn btn-danger w-100 py-3 fw-bold fs-5 shadow">CREA ACCOUNT E SQUADRA</button>
+            
+            <div class="text-center mt-3">
+                <a href="/Login" class="text-white-50 small">Hai già un account? Accedi</a>
+            </div>
+        </form>
+    </div>
+</div>

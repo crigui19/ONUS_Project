@@ -1,0 +1,155 @@
+﻿@page
+@model Test_ONUS.Pages.GestioneParametriModel
+@{
+    ViewData["Title"] = "Gestione Parametri";
+}
+
+<div class="container py-4">
+    
+    @if (TempData["Errore"] != null)
+    {
+        <div class="alert alert-danger fw-bold shadow-sm mb-4 d-flex align-items-center">
+            <span class="fs-4 me-3">⚠️</span>
+            @TempData["Errore"]
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-white fw-bold text-uppercase border-start border-4 border-primary ps-3">
+            Gestione Parametri
+        </h2>
+        <button class="btn btn-primary fw-bold shadow-sm" onclick="apriModale(0, '', 0, 10, false, true)">
+            + NUOVO PARAMETRO
+        </button>
+    </div>
+
+    <div class="card border-0 shadow-lg bg-dark">
+        <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle m-0">
+                <thead>
+                    <tr class="text-uppercase text-muted small ls-1">
+                        <th class="ps-4 py-3">Nome</th>
+                        <th class="text-center">Range</th>
+                        <th class="text-center">Ruolo</th>
+                        <th class="text-center">Stato</th>
+                        <th class="text-end pe-4">Azioni</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model.Parametri)
+                    {
+                        // Identifica se è un parametro base del sistema
+                        bool isFisso = (p.Nome.Equals("RPE", StringComparison.OrdinalIgnoreCase) ||
+                                        p.Nome.Contains("Sonno", StringComparison.OrdinalIgnoreCase) ||
+                                        p.Nome.Equals("Stress", StringComparison.OrdinalIgnoreCase));
+
+                        <tr>
+                            <td class="ps-4 fw-bold text-white fs-5">@p.Nome</td>
+                            <td class="text-center text-white-50">@p.ValoreMinimo - @p.ValoreMassimo</td>
+                            <td class="text-center">
+                                @if (p.IsCalcoloCarico)
+                                {
+                                    <span class="badge bg-warning text-dark">CALCOLO CARICO (RPE)</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Monitoraggio</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                @if (p.IsAttivo)
+                                {
+                                    <span class="badge bg-success">ATTIVO</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">INATTIVO</span>
+                                }
+                            </td>
+                            <td class="text-end pe-4">
+                                @if (isFisso)
+                                {
+                                    <span class="badge bg-secondary border border-secondary text-white-50 p-2">🔒 DI SISTEMA</span>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-sm btn-outline-info me-2"
+                                            onclick="apriModale(@p.Id, '@Html.Raw(p.Nome.Replace("'", "\\'"))', @p.ValoreMinimo, @p.ValoreMassimo, @(p.IsCalcoloCarico.ToString().ToLower()), @(p.IsAttivo.ToString().ToLower()))">
+                                        ✏️ MODIFICA
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalParametro" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark border border-secondary text-white shadow-lg">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title fw-bold" id="modalTitle">Nuovo Parametro</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" asp-page-handler="Save">
+                    <input type="hidden" id="pId" name="Id" value="0" />
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">Nome Parametro</label>
+                        <input type="text" id="pNome" name="Nome" class="form-control bg-secondary text-white border-0 fw-bold" placeholder="Es. Stress, Idratazione..." required />
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label text-muted small">Minimo</label>
+                            <input type="number" id="pMin" name="ValoreMinimo" class="form-control bg-secondary text-white border-0 text-center" value="0" required />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label text-muted small">Massimo</label>
+                            <input type="number" id="pMax" name="ValoreMassimo" class="form-control bg-secondary text-white border-0 text-center" value="10" required />
+                        </div>
+                    </div>
+
+                    <div class="form-check form-switch mb-3 p-3 rounded bg-secondary bg-opacity-25 border border-secondary">
+                        <input class="form-check-input" type="checkbox" id="pIsCalcoloCarico" name="IsCalcoloCarico" value="true">
+                        <label class="form-check-label text-warning fw-bold" for="pIsCalcoloCarico">
+                            Usa per calcolo Carico (RPE)
+                        </label>
+                        <div class="small text-muted mt-1">Se attivo, questo parametro verrà moltiplicato per la durata per ottenere il carico.</div>
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="pIsAttivo" name="IsAttivo" value="true" checked>
+                        <label class="form-check-label text-white" for="pIsAttivo">Parametro Attivo</label>
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary fw-bold py-2">SALVA</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function apriModale(id, nome, min, max, isCalcolo, isAttivo) {
+            document.getElementById('pId').value = id;
+            document.getElementById('pNome').value = nome;
+            document.getElementById('pMin').value = min;
+            document.getElementById('pMax').value = max;
+
+            document.getElementById('pIsCalcoloCarico').checked = isCalcolo;
+            document.getElementById('pIsAttivo').checked = isAttivo;
+
+            document.getElementById('modalTitle').innerText = id === 0 ? "Nuovo Parametro" : "Modifica Parametro";
+
+            new bootstrap.Modal(document.getElementById('modalParametro')).show();
+        }
+    </script>
+}

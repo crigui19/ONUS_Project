@@ -1,0 +1,21 @@
+{
+  "name": "ONUS Training System",
+  "short_name": "ONUS",
+  "description": "Sistema di monitoraggio carichi atleti",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#121212",
+  "theme_color": "#ff4757",
+  "icons": [
+    {
+      "src": "/img/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/img/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

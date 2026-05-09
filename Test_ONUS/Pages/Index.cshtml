@@ -1,0 +1,76 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Benvenuto";
+}
+
+<div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 text-center bg-dark text-white rounded-3 shadow-lg hero-section">
+    <div class="col-md-8 p-lg-5 mx-auto my-5">
+        <h1 class="display-3 fw-bold text-danger mb-3 tracking-wide">ONUS</h1>
+        <h3 class="fw-normal text-white-50 mb-4">Athlete Monitoring System</h3>
+        <p class="lead fw-normal mb-4">
+            La piattaforma definitiva per il monitoraggio del carico interno ed esterno.
+            Ottimizza le performance, previeni gli infortuni e gestisci la tua squadra con un click.
+        </p>
+
+        <div class="d-flex gap-3 justify-content-center lead fw-normal">
+            <a class="btn btn-danger btn-lg px-4 py-3 fw-bold shadow-lg" href="/Login">
+                ACCEDI ALL'APP
+            </a>
+            <a class="btn btn-outline-light btn-lg px-4 py-3 fw-bold" href="#features">
+                SCOPRI DI PIÙ
+            </a>
+            <a href="/Registrazione" class="btn btn-danger btn-lg px-4 py-3 fw-bold shadow-lg">
+                REGISTRA SQUADRA
+            </a>
+        </div>
+    </div>
+    <div class="product-device shadow-sm d-none d-md-block"></div>
+    <div class="product-device product-device-2 shadow-sm d-none d-md-block"></div>
+</div>
+
+<div id="features" class="container px-4 py-5">
+    <h2 class="pb-2 border-bottom border-secondary text-white">I Nostri Servizi</h2>
+
+    <div class="row g-4 py-5 row-cols-1 row-cols-lg-3">
+        <div class="col">
+            <div class="feature-box p-4 h-100 rounded-3 bg-dark border border-secondary shadow-sm">
+                <div class="feature-icon d-inline-flex align-items-center justify-content-center bg-danger bg-gradient text-white fs-2 mb-3 rounded-3 p-3">
+                    ⚡
+                </div>
+                <h3 class="text-white">Input Rapido</h3>
+                <p>Interfaccia "Tap & Go" ottimizzata per i giocatori. Inserimento dati RPE, Sonno e Benessere in meno di 5 secondi.</p>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="feature-box p-4 h-100 rounded-3 bg-dark border border-secondary shadow-sm">
+                <div class="feature-icon d-inline-flex align-items-center justify-content-center bg-primary bg-gradient text-white fs-2 mb-3 rounded-3 p-3">
+                    📈
+                </div>
+                <h3 class="text-white">Analisi A.C.W.R.</h3>
+                <p>Algoritmo automatico per il calcolo del rapporto Acute:Chronic. Visualizza i trend di carico e previeni il sovrallenamento.</p>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="feature-box p-4 h-100 rounded-3 bg-dark border border-secondary shadow-sm">
+                <div class="feature-icon d-inline-flex align-items-center justify-content-center bg-warning bg-gradient text-dark fs-2 mb-3 rounded-3 p-3">
+                    📋
+                </div>
+                <h3 class="text-white">Gestione Rosa</h3>
+                <p>Pannello di controllo completo per lo staff tecnico. Gestisci anagrafiche, foto e monitora lo stato di tutta la squadra.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top border-secondary">
+        <p class="col-md-4 mb-0">&copy; 2025 ONUS Performance</p>
+
+        <ul class="nav col-md-4 justify-content-end">
+            <li class="nav-item"><a href="#" class="nav-link px-2 text-muted">Supporto</a></li>
+        </ul>
+    </footer>
+</div>
