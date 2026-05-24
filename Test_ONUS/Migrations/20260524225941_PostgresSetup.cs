@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -8,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Test_ONUS.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreateSqlite : Migration
+    public partial class PostgresSetup : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -17,14 +18,14 @@ namespace Test_ONUS.Migrations
                 name: "Parametri",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Nome = table.Column<string>(type: "TEXT", nullable: false),
-                    ValoreMinimo = table.Column<int>(type: "INTEGER", nullable: false),
-                    ValoreMassimo = table.Column<int>(type: "INTEGER", nullable: false),
-                    IsAttivo = table.Column<bool>(type: "INTEGER", nullable: false),
-                    IsCalcoloCarico = table.Column<bool>(type: "INTEGER", nullable: false),
-                    SquadraId = table.Column<int>(type: "INTEGER", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Nome = table.Column<string>(type: "text", nullable: false),
+                    ValoreMinimo = table.Column<int>(type: "integer", nullable: false),
+                    ValoreMassimo = table.Column<int>(type: "integer", nullable: false),
+                    IsAttivo = table.Column<bool>(type: "boolean", nullable: false),
+                    IsCalcoloCarico = table.Column<bool>(type: "boolean", nullable: false),
+                    SquadraId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -35,12 +36,13 @@ namespace Test_ONUS.Migrations
                 name: "Sessioni",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    AtletaId = table.Column<int>(type: "INTEGER", nullable: false),
-                    Data = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    DurataMinuti = table.Column<int>(type: "INTEGER", nullable: false),
-                    Note = table.Column<string>(type: "TEXT", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    AtletaId = table.Column<int>(type: "integer", nullable: false),
+                    Data = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    DurataTotaleMinuti = table.Column<int>(type: "integer", nullable: false),
+                    TempoEffettivoMinuti = table.Column<int>(type: "integer", nullable: false),
+                    Note = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -51,9 +53,9 @@ namespace Test_ONUS.Migrations
                 name: "Squadre",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Nome = table.Column<string>(type: "TEXT", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Nome = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -64,11 +66,11 @@ namespace Test_ONUS.Migrations
                 name: "ValoriSessione",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    SessioneId = table.Column<int>(type: "INTEGER", nullable: false),
-                    ParametroId = table.Column<int>(type: "INTEGER", nullable: false),
-                    Valore = table.Column<int>(type: "INTEGER", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    SessioneId = table.Column<int>(type: "integer", nullable: false),
+                    ParametroId = table.Column<int>(type: "integer", nullable: false),
+                    Valore = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -91,17 +93,19 @@ namespace Test_ONUS.Migrations
                 name: "Atleti",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Nome = table.Column<string>(type: "TEXT", nullable: false),
-                    Cognome = table.Column<string>(type: "TEXT", nullable: false),
-                    FotoUrl = table.Column<string>(type: "TEXT", nullable: false),
-                    IsAttivo = table.Column<bool>(type: "INTEGER", nullable: false),
-                    Password = table.Column<string>(type: "TEXT", nullable: false),
-                    IsInfortunato = table.Column<bool>(type: "INTEGER", nullable: false),
-                    IsInRiabilitazione = table.Column<bool>(type: "INTEGER", nullable: false),
-                    DescrizioneInfortunio = table.Column<string>(type: "TEXT", nullable: true),
-                    SquadraId = table.Column<int>(type: "INTEGER", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Nome = table.Column<string>(type: "text", nullable: false),
+                    Cognome = table.Column<string>(type: "text", nullable: false),
+                    FotoUrl = table.Column<string>(type: "text", nullable: false),
+                    IsAttivo = table.Column<bool>(type: "boolean", nullable: false),
+                    Password = table.Column<string>(type: "text", nullable: false),
+                    Peso = table.Column<double>(type: "double precision", nullable: false),
+                    Altezza = table.Column<int>(type: "integer", nullable: false),
+                    IsInfortunato = table.Column<bool>(type: "boolean", nullable: false),
+                    IsInRiabilitazione = table.Column<bool>(type: "boolean", nullable: false),
+                    DescrizioneInfortunio = table.Column<string>(type: "text", nullable: true),
+                    SquadraId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -117,12 +121,12 @@ namespace Test_ONUS.Migrations
                 name: "PreparatoriAtletici",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Nome = table.Column<string>(type: "TEXT", nullable: false),
-                    Cognome = table.Column<string>(type: "TEXT", nullable: false),
-                    Password = table.Column<string>(type: "TEXT", nullable: false),
-                    SquadraId = table.Column<int>(type: "INTEGER", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Nome = table.Column<string>(type: "text", nullable: false),
+                    Cognome = table.Column<string>(type: "text", nullable: false),
+                    Password = table.Column<string>(type: "text", nullable: false),
+                    SquadraId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
