@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using Test_ONUS.Data;
 
 var builder = WebApplication.CreateBuilder(args);
