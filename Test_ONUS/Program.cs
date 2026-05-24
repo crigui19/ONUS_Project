@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Test_ONUS.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -70,7 +71,23 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 
 
 var app = builder.Build();
-
+// ==========================================
+// AUTO-MIGRAZIONE DATABASE ALL'AVVIO
+// ==========================================
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        // Applica automaticamente le migrazioni (crea le tabelle su Neon/Postgres)
+        context.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Errore durante la migrazione del database: {ex.Message}");
+    }
+}
 // ==========================================
 // 5. CONFIGURAZIONE PIPELINE HTTP
 // ==========================================
