@@ -9,13 +9,13 @@
             <div class="col-6 col-md-4 col-lg-3">
                 <div class="card player-tile text-center p-4 h-100 d-flex flex-column justify-content-center position-relative"
                      onclick="apriModale(@atleta.Id, '@atleta.Nome @atleta.Cognome')">
-            
+
                     <div class="mb-3">
                         <img src="@atleta.FotoUrl" class="rounded-circle shadow-lg" width="100" height="100" style="object-fit: cover;" />
                     </div>
                     <h4 class="fw-bold m-0 text-white">@atleta.Nome</h4>
                     <p class="text-muted text-uppercase small fw-bold ls-1 mb-3">@atleta.Cognome</p>
-            
+
                     @if (atleta.IsInfortunato || atleta.IsInRiabilitazione)
                     {
                         <div class="mt-auto" onclick="event.stopPropagation();">
@@ -73,7 +73,7 @@
 
 <div class="modal fade" id="inputModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content bg-dark text-white border-secondary">
             <div class="modal-header border-0 pb-0">
                 <div>
                     <small class="text-muted text-uppercase ls-1">Atleta</small>
@@ -88,20 +88,26 @@
 
                     @foreach (var param in Model.ParametriDashboard)
                     {
-                        // Aggiungiamo data-is-rpe per riconoscere quale di questi è l'RPE
                         <input type="hidden" id="val_@param.Id" name="ValoriParametri[@param.Id]" data-is-rpe="@param.IsCalcoloCarico.ToString().ToLower()" />
                     }
 
                     <div class="row g-4">
                         <div class="col-md-6 d-flex flex-column gap-2">
-
                             @foreach (var param in Model.ParametriDashboard)
                             {
-                                <div class="param-btn d-flex justify-content-between align-items-center" 
-                                     id="btn_@param.Id" 
+                                <div class="param-btn d-flex justify-content-between align-items-center"
+                                     id="btn_@param.Id"
                                      onclick="selezionaCampo(@param.Id)">
                                     <span class="fs-5">
-                                        @if(param.IsCalcoloCarico) { <span>🔥</span> } else { <span>📊</span> }
+                                        @if (param.IsCalcoloCarico)
+                                        {
+                                            <span>🔥</span>
+                                        }
+                                        else
+                                        {
+
+                                            <span>📊</span>
+                                        }
                                         @param.Nome
                                         <small class="text-muted" style="font-size:0.7em;">(@param.ValoreMinimo-@param.ValoreMassimo)</small>
                                     </span>
@@ -115,7 +121,14 @@
                         </div>
 
                         <div class="col-md-6">
-                             <div class="row g-2 mb-3">
+
+                            <div class="d-flex justify-content-end mb-2">
+                                <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalGuidaImmagine">
+                                    ℹ️ Guida Scala Sforzo
+                                </button>
+                            </div>
+
+                            <div class="row g-2 mb-3">
                                 <div class="col-4"><button type="button" class="btn numpad-btn w-100 py-3 fs-4" onclick="digita(1)">1</button></div>
                                 <div class="col-4"><button type="button" class="btn numpad-btn w-100 py-3 fs-4" onclick="digita(2)">2</button></div>
                                 <div class="col-4"><button type="button" class="btn numpad-btn w-100 py-3 fs-4" onclick="digita(3)">3</button></div>
@@ -142,104 +155,14 @@
     </div>
 </div>
 
-<script>
-    // Crea un array JS con gli ID dei parametri nell'ordine corretto
-    var paramIds = [@string.Join(",", Model.ParametriDashboard.Select(p => p.Id))];
-    var currentParamId = null;
-    var modalInput;
+<div class="modal fade" id="modalGuidaImmagine" tabindex="-1" aria-labelledby="modalGuidaImmagineLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title fw-bold" id="modalGuidaImmagineLabel">Scala di Riferimento</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-toggle="modal" data-bs-target="#inputModal" aria-label="Chiudi"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img src="~/Img/guida-obiettivo.jpg" alt="Guida Obiettivo" class="img-fluid rounded shadow" />
 
-    function apriModale(id, nome) {
-        document.getElementById('hiddenAtletaId').value = id;
-        document.getElementById('lblNomeGiocatore').innerText = nome;
-
-        document.querySelector('textarea[name="Note"]').value = '';
-
-        // Reset dinamico di tutti i campi
-        paramIds.forEach(pid => {
-            let valInput = document.getElementById('val_' + pid);
-            let displaySpan = document.getElementById('display_' + pid);
-            if(valInput) valInput.value = '';
-            if(displaySpan) displaySpan.innerText = '-';
-        });
-
-        // Link grafici
-        var linkGrafici = document.getElementById('btnVediGrafici');
-        if(linkGrafici) linkGrafici.href = '/Analisi?atletaId=' + id;
-
-        // Seleziona il primo parametro se esiste
-        if(paramIds.length > 0) {
-            selezionaCampo(paramIds[0]);
-        }
-
-        if (!modalInput) modalInput = new bootstrap.Modal(document.getElementById('inputModal'));
-        modalInput.show();
-    }
-
-    function selezionaCampo(id) {
-        currentParamId = id;
-        // Rimuovi classe active da tutti
-        document.querySelectorAll('.param-btn').forEach(el => el.classList.remove('active'));
-        // Aggiungi al corrente
-        var btn = document.getElementById('btn_' + id);
-        if(btn) btn.classList.add('active');
-    }
-
-    function digita(num) {
-        if(currentParamId === null) return;
-        let hiddenInput = document.getElementById('val_' + currentParamId);
-        let displaySpan = document.getElementById('display_' + currentParamId);
-
-        let valAttuale = hiddenInput.value;
-        let nuovoValore = valAttuale + num.toString();
-
-        if (parseInt(nuovoValore) <= 10) {
-            hiddenInput.value = nuovoValore;
-            displaySpan.innerText = nuovoValore;
-        } else if (num <= 10) {
-            hiddenInput.value = num;
-            displaySpan.innerText = num;
-        }
-    }
-
-    function cancella() {
-        if(currentParamId === null) return;
-        let hiddenInput = document.getElementById('val_' + currentParamId);
-        let displaySpan = document.getElementById('display_' + currentParamId);
-        hiddenInput.value = '';
-        displaySpan.innerText = '-';
-    }
-
-    function prossimoCampo() {
-        if(currentParamId === null) return;
-        let idx = paramIds.indexOf(currentParamId);
-        if (idx >= 0 && idx < paramIds.length - 1) {
-            selezionaCampo(paramIds[idx + 1]);
-        }
-    }
-
-    // --- 1. CONTROLLO RPE OBBLIGATORIO ---
-    document.getElementById('formDati').addEventListener('submit', function(e) {
-        let rpeInput = document.querySelector('input[data-is-rpe="true"]');
-        if (rpeInput && rpeInput.value === '') {
-            e.preventDefault(); // Blocca il form
-            alert("Attenzione: Il valore RPE (🔥) è obbligatorio per salvare l'allenamento.");
-
-            let rpeId = rpeInput.id.split('_')[1];
-            selezionaCampo(parseInt(rpeId));
-        }
-    });
-
-    // --- 2. APERTURA AUTOMATICA PER L'ATLETA ---
-    document.addEventListener('DOMContentLoaded', function() {
-        // Cerca tutti i riquadri giocatore sulla pagina
-        var tiles = document.querySelectorAll('.player-tile');
-
-        // Se ce n'è solo 1, significa che siamo nella visuale Atleta!
-        if (tiles.length === 1) {
-            // Un piccolo ritardo (150ms) assicura che Bootstrap e HTML siano pronti a mostrare la grafica
-            setTimeout(function() {
-                tiles[0].click();
-            }, 150);
-        }
-    });
-</script>
+                <p class=" mt-3

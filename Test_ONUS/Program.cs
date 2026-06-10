@@ -26,15 +26,11 @@ builder.Services.AddCors(options =>
 // ==========================================
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// Se siamo su Render, prende la stringa dalle variabili di ambiente
-var envDb = Environment.GetEnvironmentVariable("DATABASE_URL");
-if (!string.IsNullOrEmpty(envDb))
-{
-    connectionString = envDb;
-}
-
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(connectionString)); // <-- Cambiato da UseSqlite a UseNpgsq
+   options.UseNpgsql(connectionString));
+
+//builder.Services.AddDbContext<ApplicationDbContext>(options =>
+//   options.UseNpgsql(connectionString)); // <-- Cambiato da UseSqlite a UseNpgsq
 
 //var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
