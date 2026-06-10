@@ -154,7 +154,6 @@
         </div>
     </div>
 </div>
-
 <div class="modal fade" id="modalGuidaImmagine" tabindex="-1" aria-labelledby="modalGuidaImmagineLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content bg-dark text-white border-secondary">
@@ -165,4 +164,103 @@
             <div class="modal-body text-center">
                 <img src="~/Img/guida-obiettivo.jpg" alt="Guida Obiettivo" class="img-fluid rounded shadow" />
 
-                <p class=" mt-3
+                <p class="mt-3 text-light small">
+                    Fai riferimento a questa scala per valutare l'intensità in modo accurato.
+                </p>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-info text-dark fw-bold" data-bs-toggle="modal" data-bs-target="#inputModal">Ho capito</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var paramIds = [@string.Join(",", Model.ParametriDashboard.Select(p => p.Id))];
+    var currentParamId = null;
+    var modalInput;
+
+    function apriModale(id, nome) {
+        document.getElementById('hiddenAtletaId').value = id;
+        document.getElementById('lblNomeGiocatore').innerText = nome;
+
+        document.querySelector('textarea[name="Note"]').value = '';
+
+        paramIds.forEach(pid => {
+            let valInput = document.getElementById('val_' + pid);
+            let displaySpan = document.getElementById('display_' + pid);
+            if(valInput) valInput.value = '';
+            if(displaySpan) displaySpan.innerText = '-';
+        });
+
+        var linkGrafici = document.getElementById('btnVediGrafici');
+        if(linkGrafici) linkGrafici.href = '/Analisi?atletaId=' + id;
+
+        if(paramIds.length > 0) {
+            selezionaCampo(paramIds[0]);
+        }
+
+        if (!modalInput) modalInput = new bootstrap.Modal(document.getElementById('inputModal'));
+        modalInput.show();
+    }
+
+    function selezionaCampo(id) {
+        currentParamId = id;
+        document.querySelectorAll('.param-btn').forEach(el => el.classList.remove('active'));
+        var btn = document.getElementById('btn_' + id);
+        if(btn) btn.classList.add('active');
+    }
+
+    function digita(num) {
+        if(currentParamId === null) return;
+        let hiddenInput = document.getElementById('val_' + currentParamId);
+        let displaySpan = document.getElementById('display_' + currentParamId);
+
+        let valAttuale = hiddenInput.value;
+        let nuovoValore = valAttuale + num.toString();
+
+        if (parseInt(nuovoValore) <= 10) {
+            hiddenInput.value = nuovoValore;
+            displaySpan.innerText = nuovoValore;
+        } else if (num <= 10) {
+            hiddenInput.value = num;
+            displaySpan.innerText = num;
+        }
+    }
+
+    function cancella() {
+        if(currentParamId === null) return;
+        let hiddenInput = document.getElementById('val_' + currentParamId);
+        let displaySpan = document.getElementById('display_' + currentParamId);
+        hiddenInput.value = '';
+        displaySpan.innerText = '-';
+    }
+
+    function prossimoCampo() {
+        if(currentParamId === null) return;
+        let idx = paramIds.indexOf(currentParamId);
+        if (idx >= 0 && idx < paramIds.length - 1) {
+            selezionaCampo(paramIds[idx + 1]);
+        }
+    }
+
+    document.getElementById('formDati').addEventListener('submit', function(e) {
+        let rpeInput = document.querySelector('input[data-is-rpe="true"]');
+        if (rpeInput && rpeInput.value === '') {
+            e.preventDefault();
+            alert("Attenzione: Il valore RPE (🔥) è obbligatorio per salvare l'allenamento.");
+
+            let rpeId = rpeInput.id.split('_')[1];
+            selezionaCampo(parseInt(rpeId));
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var tiles = document.querySelectorAll('.player-tile');
+        if (tiles.length === 1) {
+            setTimeout(function() {
+                tiles[0].click();
+            }, 150);
+        }
+    });
+</script>
