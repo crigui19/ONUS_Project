@@ -55,7 +55,9 @@ namespace Test_ONUS.Pages
                 {
                     Nome = Input.Nome,
                     Cognome = Input.Cognome,
-                    Password = Input.Password,
+
+
+                    Password = BCrypt.Net.BCrypt.HashPassword(Input.Password),
                     SquadraId = nuovaSquadra.Id,
                     Squadra = nuovaSquadra
                 };

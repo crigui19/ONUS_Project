@@ -76,6 +76,46 @@
         <button class="btn btn-success fw-bold shadow-lg" onclick="apriModaleAtleta(0, '', '', '', '', true)">
             + NUOVO GIOCATORE
         </button>
+        <button type="button" class="btn btn-warning mb-3" data-bs-toggle="modal" data-bs-target="#notificheModal">
+            🔔 Invia Promemoria Dati
+        </button>
+
+        <div class="modal fade" id="notificheModal" tabindex="-1" aria-labelledby="notificheModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable">
+                <div class="modal-content">
+                    <form method="post" asp-page-handler="InviaNotifiche">
+                        <div class="modal-header text-bg-warning">
+                            <h5 class="modal-title" id="notificheModalLabel">Scegli gli atleti da avvisare</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="text-muted small">Seleziona i giocatori a cui mandare il promemoria:</p>
+
+                            <div class="list-group mb-3">
+                                @foreach (var atleta in Model.Atleti)
+                                {
+                                    <label class="list-group-item d-flex gap-2 align-items-center">
+                                        <input class="form-check-input flex-shrink-0" type="checkbox" name="AtletiSelezionati" value="@atleta.Id">
+                                        <span>
+                                            @atleta.Nome @atleta.Cognome
+                                        </span>
+                                    </label>
+                                }
+                            </div>
+
+                            <div>
+                                <label for="messaggioNotifica" class="form-label fw-bold">Messaggio:</label>
+                                <textarea class="form-control" id="messaggioNotifica" name="MessaggioTesto" rows="2">Ciao! Ricordati di inserire i dati della sessione di oggi nell'app. Grazie!</textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                            <button type="submit" class="btn btn-primary">Invia Notifica 🚀</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="card border-0 shadow-lg overflow-hidden" style="background: #2c2c2c;">

@@ -20,6 +20,7 @@ namespace Test_ONUS.Data
         public DbSet<ValoreSessione> ValoriSessione { get; set; }
         public DbSet<Squadra> Squadre { get; set; }
         public DbSet<PreparatoreAtletico> PreparatoriAtletici { get; set; }
+        public DbSet<SottoscrizionePush> SottoscrizioniPush { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
