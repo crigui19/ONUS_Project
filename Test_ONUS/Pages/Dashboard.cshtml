@@ -175,7 +175,7 @@
     </div>
 </div>
 
-@if (Context.Session.GetString("Ruolo") == "Atleta")
+@if (HttpContext.Session.GetString("Ruolo") == "Atleta")
 {
     <div class="modal fade" id="modalNotificheAutomatico" tabindex="-1" aria-labelledby="modalNotificheLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
