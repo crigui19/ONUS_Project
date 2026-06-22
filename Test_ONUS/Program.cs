@@ -25,13 +25,11 @@ builder.Services.AddCors(options =>
 // ==========================================
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// TRUCCHETTO RENDER: Cerchiamo PRIMA la variabile standard, e SE è nulla (??), cerchiamo quella interna
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL")
                   ?? Environment.GetEnvironmentVariable("INTERNAL_DATABASE_URL");
 
 if (!string.IsNullOrEmpty(databaseUrl))
 {
-    // Fix per eventuali DB Neon (trasforma postgresql:// in postgres://)
     databaseUrl = databaseUrl.Replace("postgresql://", "postgres://");
 
     if (databaseUrl.StartsWith("postgres://"))
@@ -39,7 +37,11 @@ if (!string.IsNullOrEmpty(databaseUrl))
         var databaseUri = new Uri(databaseUrl);
         var userInfo = databaseUri.UserInfo.Split(':');
 
-        connectionString = $"Host={databaseUri.Host};Port={databaseUri.Port};Database={databaseUri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=True;";
+        // TRUCCHETTO PORTA: Se Render non scrive la porta nel link, usiamo la 5432 di default
+        var port = databaseUri.Port > 0 ? databaseUri.Port : 5432;
+
+        // Ho modificato SSL Mode in "Prefer" che è lo standard per i database interni di Render
+        connectionString = $"Host={databaseUri.Host};Port={port};Database={databaseUri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Prefer;Trust Server Certificate=True;";
     }
 }
 
