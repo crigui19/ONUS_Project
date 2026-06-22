@@ -1,11 +1,12 @@
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using System.IO;
 using Test_ONUS.Data;
 using Test_ONUS.Models;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using System.IO;
+using WebPush;
 
 namespace Test_ONUS.Pages
 {
@@ -139,36 +140,54 @@ namespace Test_ONUS.Pages
         // Riceve in automatico l'elenco delle spunte (gli ID degli atleti) e il testo
         public async Task<IActionResult> OnPostInviaNotificheAsync(List<int> AtletiSelezionati, string MessaggioTesto)
         {
-            // Verifiche di sicurezza
             if (HttpContext.Session.GetString("Ruolo") != "Staff") return RedirectToPage("/Index");
             var squadraId = HttpContext.Session.GetInt32("SquadraId");
             if (squadraId == null) return RedirectToPage("/Login");
 
-            // Se il coach ha cliccato "Invia" senza spuntare nessuno
             if (AtletiSelezionati == null || !AtletiSelezionati.Any())
             {
-                // Qui potresti impostare un messaggio di errore
+                TempData["Errore"] = "Nessun atleta selezionato.";
                 return RedirectToPage();
             }
 
-            // ====================================================
-            // QUI AVVIENE LA MAGIA DELL'INVIO
-            // ====================================================
+            // 1. Recuperiamo le tue chiavi VAPID dal file appsettings.json
+            var config = HttpContext.RequestServices.GetService<IConfiguration>();
+            var subject = config["VapidKeys:Subject"];
+            var publicKey = config["VapidKeys:PublicKey"];
+            var privateKey = config["VapidKeys:PrivateKey"];
+
+            var vapidDetails = new VapidDetails(subject, publicKey, privateKey);
+            var webPushClient = new WebPushClient();
+            int notificheInviate = 0;
+
+            // 2. Per ogni atleta spuntato nella lista...
             foreach (var atletaId in AtletiSelezionati)
             {
-                // 1. Cerchiamo l'atleta nel database per prendere i suoi contatti
-                var atleta = await _context.Atleti.FindAsync(atletaId);
+                // 3. Cerchiamo tutti i suoi dispositivi registrati (telefoni, tablet)
+                var sottoscrizioni = await _context.SottoscrizioniPush
+                    .Where(s => s.AtletaId == atletaId)
+                    .ToListAsync();
 
-                if (atleta != null)
+                // 4. Inviamo il messaggio a ogni dispositivo trovato
+                foreach (var sub in sottoscrizioni)
                 {
-                    // TODO: Logica di invio! 
-                    Console.WriteLine($"Invio notifica a {atleta.Nome}: {MessaggioTesto}");
+                    try
+                    {
+                        var pushSubscription = new PushSubscription(sub.Endpoint, sub.P256dh, sub.Auth);
+                        // Il messaggio "fisico" che arriverà al Service Worker
+                        await webPushClient.SendNotificationAsync(pushSubscription, MessaggioTesto, vapidDetails);
+                        notificheInviate++;
+                    }
+                    catch (Exception ex)
+                    {
+                        // Se un telefono non esiste più (es. l'atleta ha cambiato cellulare), WebPush dà errore.
+                        // In un'app avanzata qui lo cancelleremmo dal database, per ora ignoriamo l'errore.
+                        Console.WriteLine($"Errore invio a Atleta ID {atletaId}: {ex.Message}");
+                    }
                 }
             }
 
-            // Salviamo un messaggio per dire al coach che è andato tutto bene
-            TempData["MessaggioSuccesso"] = $"Promemoria inviato a {AtletiSelezionati.Count} atleti!";
-
+            TempData["MessaggioSuccesso"] = $"Inviate {notificheInviate} notifiche con successo!";
             return RedirectToPage();
         }
         public async Task<IActionResult> OnPostDeleteAsync(int id)
