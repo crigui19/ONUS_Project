@@ -26,6 +26,17 @@ builder.Services.AddCors(options =>
 // ==========================================
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
+// Se siamo su Render, intercettiamo la variabile d'ambiente del database
+var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+if (!string.IsNullOrEmpty(databaseUrl) && databaseUrl.StartsWith("postgres://"))
+{
+    // Convertiamo il formato "postgres://..." di Render nel formato stringa standard richiesto da EF Core
+    var databaseUri = new Uri(databaseUrl);
+    var userInfo = databaseUri.UserInfo.Split(':');
+
+    connectionString = $"Host={databaseUri.Host};Port={databaseUri.Port};Database={databaseUri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=True;";
+}
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
    options.UseNpgsql(connectionString));
 

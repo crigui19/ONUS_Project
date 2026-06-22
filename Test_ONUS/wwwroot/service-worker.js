@@ -32,3 +32,45 @@ self.addEventListener('notificationclick', function (event) {
         clients.openWindow(event.notification.data.url)
     );
 });
+
+// ==========================================
+// RICEZIONE DELLA NOTIFICA PUSH
+// ==========================================
+self.addEventListener('push', function (event) {
+    console.log('[Service Worker] Push Ricevuto!');
+
+    // Testo di default se il server non manda nulla
+    let testoNotifica = 'Ricordati di inserire i dati della sessione di oggi!';
+
+    // Se il server C# ci ha mandato un messaggio personalizzato, usiamo quello
+    if (event.data) {
+        testoNotifica = event.data.text();
+    }
+
+    const title = 'ONUS Athletes 🏀';
+    const options = {
+        body: testoNotifica,
+        icon: '/Img/icon-192.png', // L'icona che compare a fianco del messaggio
+        badge: '/Img/icon-192.png', // L'icona piccola in alto sulla barra di stato (Android)
+        vibrate: [200, 100, 200, 100, 200, 100, 200], // Fa vibrare il telefono!
+        requireInteraction: true // Su PC, la notifica non scompare finché non la chiudi
+    };
+
+    // Mostra la notifica di sistema sul telefono
+    event.waitUntil(self.registration.showNotification(title, options));
+});
+
+// ==========================================
+// AZIONE QUANDO L'ATLETA CLICCA SULLA NOTIFICA
+// ==========================================
+self.addEventListener('notificationclick', function (event) {
+    console.log('[Service Worker] L\'utente ha cliccato sulla notifica.');
+
+    // Chiude la tendina della notifica
+    event.notification.close();
+
+    // Apre l'app direttamente sulla Dashboard
+    event.waitUntil(
+        clients.openWindow('https://onusathletes.it/Dashboard')
+    );
+});
