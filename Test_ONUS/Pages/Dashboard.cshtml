@@ -1,5 +1,6 @@
 ﻿@page
 @model DashboardModel
+@using Microsoft.AspNetCore.Http
 
 <div class="container py-4">
     <h2 class="text-center mb-5 fw-bold text-white tracking-wide">SELEZIONA ATLETA</h2>
@@ -105,7 +106,6 @@
                                         }
                                         else
                                         {
-
                                             <span>📊</span>
                                         }
                                         @param.Nome
@@ -154,6 +154,7 @@
         </div>
     </div>
 </div>
+
 <div class="modal fade" id="modalGuidaImmagine" tabindex="-1" aria-labelledby="modalGuidaImmagineLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content bg-dark text-white border-secondary">
@@ -163,7 +164,6 @@
             </div>
             <div class="modal-body text-center">
                 <img src="~/Img/info.jpeg" alt="Guida Obiettivo" class="img-fluid rounded shadow" />
-
                 <p class="mt-3 text-light small">
                     Fai riferimento a questa scala per valutare l'intensità in modo accurato.
                 </p>
@@ -174,6 +174,30 @@
         </div>
     </div>
 </div>
+
+@if (Context.Session.GetString("Ruolo") == "Atleta")
+{
+    <div class="modal fade" id="modalNotificheAutomatico" tabindex="-1" aria-labelledby="modalNotificheLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-secondary text-center shadow-lg">
+                <div class="modal-header border-secondary justify-content-center">
+                    <h5 class="modal-title fw-bold" id="modalNotificheLabel">🔔 Resta Aggiornato!</h5>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="fs-5">Vuoi ricevere un promemoria per inserire i dati a fine allenamento?</p>
+                    <p class="text-secondary small mb-4">Clicca su "Attiva Ora" e poi su "Consenti" nel prossimo avviso.</p>
+
+                    <button class="btn btn-primary btn-lg w-100 mb-2 fw-bold" onclick="richiediPermessoNotifiche()" data-bs-dismiss="modal">
+                        Attiva Ora 🚀
+                    </button>
+                    <button class="btn btn-outline-secondary w-100" data-bs-dismiss="modal">
+                        Forse più tardi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
 
 <script>
     var paramIds = [@string.Join(",", Model.ParametriDashboard.Select(p => p.Id))];
@@ -264,3 +288,86 @@
         }
     });
 </script>
+
+@section Scripts {
+    <script>
+        // ========================================================
+        // 1. INCOLLA QUI SOLO LA TUA PUBLIC KEY
+        // ========================================================
+        const applicationServerPublicKey = 'INCOLLA_QUI_LA_TUA_PUBLIC_KEY';
+
+        // Apre il pop-up automaticamente appena la pagina si carica (se è un atleta e non ha già risposto)
+        document.addEventListener("DOMContentLoaded", function() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                // Controllo se esiste il modale nell'HTML (così non dà errore per lo Staff)
+                var modaleHtml = document.getElementById('modalNotificheAutomatico');
+                if (modaleHtml) {
+                    setTimeout(() => {
+                        var myModal = new bootstrap.Modal(modaleHtml);
+                        myModal.show();
+                    }, 500); // Mezzo secondo di ritardo per un bell'effetto visivo
+                }
+            }
+        });
+
+        // Funzione per convertire la chiave (standard di sicurezza)
+        function urlB64ToUint8Array(base64String) {
+            const padding = '='.repeat((4 - base64String.length % 4) % 4);
+            const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+            const rawData = window.atob(base64);
+            const outputArray = new Uint8Array(rawData.length);
+            for (let i = 0; i < rawData.length; ++i) {
+                outputArray[i] = rawData.charCodeAt(i);
+            }
+            return outputArray;
+        }
+
+        // Funzione principale scatenata dal click sul bottone del Modale
+        async function richiediPermessoNotifiche() {
+            if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+                alert('Il tuo browser o telefono non supporta le notifiche Push.');
+                return;
+            }
+
+            try {
+                // Chiediamo il permesso all'utente (Compare il popup nativo del browser/telefono)
+                const permission = await Notification.requestPermission();
+
+                if (permission !== 'granted') {
+                    // Se l'utente clicca "Blocca" sul popup del telefono
+                    console.log('Notifiche bloccate dall\'utente.');
+                    return;
+                }
+
+                // Registriamo il Service Worker
+                const registration = await navigator.serviceWorker.register('/service-worker.js');
+
+                // Iscriviamo il telefono usando la tua Public Key
+                const applicationServerKey = urlB64ToUint8Array(applicationServerPublicKey);
+                const subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: applicationServerKey
+                });
+
+                // Inviamo l'indirizzo segreto al nostro PushController C#
+                const response = await fetch('/api/Push/subscribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(subscription)
+                });
+
+                if (response.ok) {
+                    // Piccolo feedback visivo
+                    alert('Notifiche attivate con successo! 🎉');
+                } else {
+                    console.error('Errore dal server:', response);
+                    alert('Errore durante il salvataggio nel database.');
+                }
+
+            } catch (error) {
+                console.error('Errore durante l\'iscrizione:', error);
+                alert('Si è verificato un errore.');
+            }
+        }
+    </script>
+}
