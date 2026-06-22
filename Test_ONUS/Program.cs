@@ -27,9 +27,13 @@ builder.Services.AddCors(options =>
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 // Se siamo su Render, intercettiamo la variabile d'ambiente del database
-var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+// Se siamo su Render, intercettiamo la variabile d'ambiente del database (controllando sia DATABASE_URL che INTERNAL_DATABASE_URL)
+var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL")
+                  ?? Environment.GetEnvironmentVariable("INTERNAL_DATABASE_URL");
+
 if (!string.IsNullOrEmpty(databaseUrl) && databaseUrl.StartsWith("postgres://"))
 {
+    // Il resto del codice di conversione rimane identico...
     // Convertiamo il formato "postgres://..." di Render nel formato stringa standard richiesto da EF Core
     var databaseUri = new Uri(databaseUrl);
     var userInfo = databaseUri.UserInfo.Split(':');
