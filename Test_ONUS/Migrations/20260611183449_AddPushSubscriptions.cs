@@ -17,10 +17,10 @@ namespace Test_ONUS.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    AtletaId = table.Column<int>(type: "integer", nullable: false),
                     Endpoint = table.Column<string>(type: "text", nullable: false),
                     P256dh = table.Column<string>(type: "text", nullable: false),
-                    Auth = table.Column<string>(type: "text", nullable: false)
+                    Auth = table.Column<string>(type: "text", nullable: false),
+                    AtletaId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
