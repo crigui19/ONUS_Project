@@ -168,23 +168,30 @@
         </div>
     </footer>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script> 
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>  
+    <script src="~/js/site.js" asp-append-version="true"></script>
 
     <script>
-            if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('/service-worker.js')
-                        .then(reg => console.log('PWA: Service Worker Registrato'))
-                        .catch(err => console.log('PWA: Errore SW', err));
-                });
-            }
+        // 1. Nascondi il loader quando la pagina ha finito di caricare
+        window.addEventListener('load', function () {
+        document.getElementById('loading-overlay').classList.add('loaded');
+        });
 
-            function toggleCambioPassword() {
-                var box = document.getElementById('boxNuovaPass');
-                box.style.display = (box.style.display === 'none') ? 'block' : 'none';
-            }
+        // 2. Registrazione del Service Worker per la PWA
+        if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+        .then(reg => console.log('PWA: Service Worker Registrato'))
+        .catch(err => console.log('PWA: Errore SW', err));
+        });
+        }
+
+        // 3. Funzione per mostrare/nascondere il box del cambio password
+        function toggleCambioPassword() {
+        var box = document.getElementById('boxNuovaPass');
+        box.style.display = (box.style.display === 'none') ? 'block' : 'none';
+        }
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)
