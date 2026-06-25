@@ -2,7 +2,7 @@
 @model Test_ONUS.Pages.ReportModel
 @{
     ViewData["Title"] = "Report Atleta";
-    Layout = "_Layout"; // Assicuriamoci che usi il layout principale
+    Layout = "_Layout";
 }
 
 <style>
@@ -13,38 +13,42 @@
         background-color: #1a1a1a;
     }
 
-    /* STILE SPECIFICO PER LA STAMPA SU CARTA */
-    @media print {
-        /* Nasconde Navbar, Footer e pulsanti durante la stampa */
-        header, footer, .no-print, .offcanvas-backdrop { display: none !important; }
-        
-        /* Forza i colori a Bianco e Nero per la carta */
-        body, .report-card, .card, .bg-dark, .bg-black { 
-            background-color: white !important; 
-            color: black !important; 
+    /* STILE SPECIFICO PER LA STAMPA SU CARTA (Uso la doppia @@ per Razor) */
+    @@media print {
+        header, footer, .no-print, .offcanvas-backdrop {
+            display: none !important;
+        }
+
+        body, .report-card, .card, .bg-dark, .bg-black {
+            background-color: white !important;
+            color: black !important;
             box-shadow: none !important;
             border: none !important;
         }
-        
-        /* Rimuove i gradienti e forza il testo scuro */
-        .text-gradient-onus, .text-white, .text-white-50, .text-info { 
+
+        .text-gradient-onus, .text-white, .text-white-50, .text-info {
             background: none !important;
             -webkit-text-fill-color: black !important;
-            color: black !important; 
+            color: black !important;
         }
 
-        /* Bordo semplice per la tabella stampata */
-        table, th, td, tr { border: 1px solid #ddd !important; }
-        .badge { border: 1px solid #000 !important; color: #000 !important; background: transparent !important; }
-        
-        /* Margini pagina */
-        @page { margin: 1cm; }
+        table, th, td, tr {
+            border: 1px solid #ddd !important;
+        }
+
+        .badge {
+            border: 1px solid #000 !important;
+            color: #000 !important;
+            background: transparent !important;
+        }
+
+        @@page {
+            margin: 1cm;
+        }
     }
 </style>
 
 <div class="container py-4">
-    
-    <!-- Pulsanti di navigazione e stampa (Nascosti durante la stampa) -->
     <div class="d-flex justify-content-between align-items-center mb-4 no-print border-bottom border-secondary pb-3">
         <a href="/Analisi" class="btn btn-outline-light rounded-pill px-4 shadow-sm">
             <i class="bi bi-arrow-left me-1"></i> Torna ad Analisi
@@ -54,11 +58,8 @@
         </button>
     </div>
 
-    <!-- FOGLIO DEL REPORT -->
     <div class="card report-card text-white mb-5">
         <div class="card-body p-4 p-md-5">
-            
-            <!-- HEADER REPORT -->
             <div class="row align-items-center border-bottom border-secondary pb-4 mb-4">
                 <div class="col-md-6 d-flex align-items-center mb-3 mb-md-0">
                     <img src="~/Img/logo-onus.jpeg" alt="ONUS Logo" width="70" height="70" class="rounded-circle me-3 border border-secondary shadow-sm">
@@ -76,7 +77,6 @@
                 </div>
             </div>
 
-            <!-- SINTESI DATI (KPI) -->
             <div class="row g-4 mb-5">
                 <div class="col-md-4">
                     <div class="p-4 bg-black border border-secondary rounded-3 text-center h-100 shadow-sm" style="border-bottom: 4px solid var(--onus-blue) !important;">
@@ -98,7 +98,6 @@
                 </div>
             </div>
 
-            <!-- TABELLA DETTAGLIO SESSIONI -->
             <h5 class="text-gradient-onus fw-bold mb-3 tracking-wide">DETTAGLIO SESSIONI</h5>
             <div class="table-responsive">
                 <table class="table table-dark table-striped table-bordered border-secondary align-middle m-0">
@@ -114,11 +113,10 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @if(Model.SessioniAtleta != null && Model.SessioniAtleta.Any())
+                        @if (Model.SessioniAtleta != null && Model.SessioniAtleta.Any())
                         {
                             @foreach (var s in Model.SessioniAtleta)
                             {
-                                // Recuperiamo i valori specifici usando la stessa logica di Analisi.cshtml
                                 var valRpe = s.Valori.FirstOrDefault(v => v.Parametro.IsCalcoloCarico)?.Valore ?? 0;
                                 var valSonno = s.Valori.FirstOrDefault(v => v.Parametro.Nome.Contains("Sonno", StringComparison.OrdinalIgnoreCase))?.Valore ?? 0;
                                 var valDolore = s.Valori.FirstOrDefault(v => v.Parametro.Nome.Contains("Dolore", StringComparison.OrdinalIgnoreCase) || v.Parametro.Nome.Contains("Indolenzimento", StringComparison.OrdinalIgnoreCase))?.Valore ?? 0;
@@ -144,12 +142,10 @@
                 </table>
             </div>
 
-            <!-- FOOTER DEL DOCUMENTO -->
             <div class="mt-5 pt-4 border-top border-secondary text-center text-white-50 small">
                 <p class="m-0 fw-bold">ONUS Athlete Monitoring System &copy; @DateTime.Now.Year</p>
                 <p class="m-0 mt-1">Documento strettamente confidenziale. Riservato all'uso esclusivo dello staff tecnico e medico.</p>
             </div>
-
         </div>
     </div>
 </div>

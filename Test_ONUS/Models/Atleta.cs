@@ -28,6 +28,12 @@ namespace Test_ONUS.Models
         [ForeignKey("SquadraId")]
         public Squadra? Squadra { get; set; }
 
+        // ========================================================
+        // QUESTA È LA RIGA MANCANTE CHE RISOLVE L'ERRORE!
+        // Collega l'atleta a tutte le sessioni che ha registrato
+        // ========================================================
+        public List<SessioneAllenamento> SessioniAllenamento { get; set; } = new List<SessioneAllenamento>();
+
 
         [NotMapped]
         public double BMI
