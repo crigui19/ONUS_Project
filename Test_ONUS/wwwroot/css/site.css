@@ -282,3 +282,61 @@ body {
         transform: translateY(0);
     }
 }
+
+/* ==========================================
+   NUOVA IDENTITÀ VISIVA ONUS (VERDE/AZZURRO)
+   ========================================== */
+
+:root {
+    --onus-green: #71d92d; /* Verde fluo del logo */
+    --onus-blue: #00a0ff; /* Azzurro del logo */
+}
+
+/* Testo con gradiente (per i titoli principali) */
+.text-gradient-onus {
+    background: linear-gradient(90deg, var(--onus-green), var(--onus-blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+}
+
+/* Bottone principale con gradiente */
+.btn-onus {
+    background: linear-gradient(90deg, var(--onus-green), var(--onus-blue));
+    color: #121212 !important; /* Testo scuro sul bottone acceso per contrasto */
+    border: none;
+    font-weight: bold;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+    .btn-onus:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 15px rgba(0, 160, 255, 0.4);
+    }
+
+/* Bottone secondario (solo contorno colorato) */
+.btn-outline-onus {
+    background: transparent;
+    color: var(--onus-blue);
+    border: 2px solid var(--onus-blue);
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+    .btn-outline-onus:hover {
+        background: var(--onus-blue);
+        color: #121212;
+        box-shadow: 0 0 10px var(--onus-blue);
+    }
+
+/* Aggiorniamo il loader nero e rosso con i nuovi colori */
+.loader {
+    border: 5px solid rgba(255, 255, 255, 0.1);
+    border-top: 5px solid var(--onus-green);
+    border-bottom: 5px solid var(--onus-blue);
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px auto;
+}
