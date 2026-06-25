@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>@ViewData["Title"] - ONUS</title>
-    
+
     <link rel="manifest" href="~/manifest.json">
     <meta name="theme-color" content="#ff4757">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -50,6 +50,13 @@
                     </ul>
 
                     <ul class="navbar-nav">
+                        <!-- PULSANTE INSTALLAZIONE PWA (Nascosto di default) -->
+                        <li class="nav-item d-flex align-items-center me-3 d-none" id="installContainer">
+                            <button id="btnInstall" class="btn btn-outline-warning btn-sm fw-bold rounded-pill px-3 shadow-sm">
+                                <i class="bi bi-download me-1"></i> Installa App
+                            </button>
+                        </li>
+
                         @if (Context.Session.GetInt32("UserId") != null)
                         {
                             <li class="nav-item d-flex align-items-center gap-2">
@@ -95,7 +102,7 @@
                 </div>
 
                 <form method="post" asp-page="/Profilo" asp-page-handler="SalvaDati">
-                    
+
                     <div class="row g-2 mb-3">
                         <div class="col-6">
                             <label class="form-label text-muted small text-uppercase">@Localizer["Nome"]</label>
@@ -162,6 +169,35 @@
         </div>
     }
 
+    <!-- Modale Istruzioni Installazione iOS -->
+    <div class="modal fade" id="iosInstallModal" tabindex="-1" aria-labelledby="iosInstallModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-secondary shadow-lg">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-warning fw-bold" id="iosInstallModalLabel">
+                        <i class="bi bi-apple me-2"></i>Installa su iOS
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <p class="mb-4">Per installare <strong>ONUS</strong> sul tuo iPhone o iPad e usarla come un'app nativa, segui questi passaggi:</p>
+
+                    <div class="text-start d-inline-block">
+                        <p class="mb-3">
+                            <strong>1.</strong> Tocca il tasto <strong>Condividi</strong> <i class="bi bi-box-arrow-up fs-4 text-info align-middle mx-1"></i> nella barra di Safari (in basso o in alto).
+                        </p>
+                        <p class="mb-0">
+                            <strong>2.</strong> Scorri il menu in basso e tocca <strong>"Aggiungi alla schermata Home"</strong> <i class="bi bi-plus-square fs-5 text-light align-middle mx-1"></i>.
+                        </p>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary w-100 fw-bold" data-bs-dismiss="modal">Ho capito</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <footer class="footer text-muted text-center py-3 mt-5">
         <div class="container small">
             &copy; 2026 - ONUS Project - <a asp-page="/Privacy" class="text-secondary text-decoration-none">Privacy</a>
@@ -192,6 +228,57 @@
         var box = document.getElementById('boxNuovaPass');
         box.style.display = (box.style.display === 'none') ? 'block' : 'none';
         }
+
+        // 4. LOGICA DI INSTALLAZIONE PWA (AGGIORNATA PER IOS E ANDROID)
+        let deferredPrompt = null;
+        const installContainer = document.getElementById('installContainer');
+        const btnInstall = document.getElementById('btnInstall');
+
+        // Funzione per capire se l'utente usa un dispositivo Apple (iOS)
+        const isIos = () => {
+        const userAgent = window.navigator.userAgent.toLowerCase();
+        return /iphone|ipad|ipod/.test(userAgent);
+        };
+
+        // Funzione per capire se l'app è già installata (Standalone mode)
+        const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone) || window.matchMedia('(display-mode: standalone)').matches;
+
+        // Se è un iOS e l'app NON è installata, forziamo la comparsa del bottone
+        if (isIos() && !isInStandaloneMode()) {
+        installContainer.classList.remove('d-none');
+        }
+
+        // Cattura l'evento standard (per Android e Desktop)
+        window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installContainer.classList.remove('d-none'); // Mostra il bottone
+        });
+
+        // Cosa succede quando si clicca il bottone
+        btnInstall.addEventListener('click', async () => {
+        if (deferredPrompt !== null) {
+        // Procedura standard PC/Android: mostra il prompt del browser
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+        console.log('PWA installata tramite prompt');
+        }
+        deferredPrompt = null;
+        installContainer.classList.add('d-none');
+        } else if (isIos() && !isInStandaloneMode()) {
+        // Procedura iOS: Apri il nostro modale con le istruzioni manuali
+        var iosModal = new bootstrap.Modal(document.getElementById('iosInstallModal'));
+        iosModal.show();
+        }
+        });
+
+        // Nascondi il bottone se il sistema ci avvisa che l'installazione è andata a buon fine
+        window.addEventListener('appinstalled', () => {
+        installContainer.classList.add('d-none');
+        deferredPrompt = null;
+        console.log('Installazione completata!');
+        });
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)
