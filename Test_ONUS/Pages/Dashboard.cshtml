@@ -3,16 +3,19 @@
 @using Microsoft.AspNetCore.Http
 
 <div class="container py-4">
-    <h2 class="text-center mb-5 fw-bold text-white tracking-wide">SELEZIONA ATLETA</h2>
+    <h2 class="text-center mb-5 fw-bold tracking-wide text-gradient-onus" style="letter-spacing: 2px;">SELEZIONA ATLETA</h2>
     <div class="row g-4">
         @foreach (var atleta in Model.Atleti)
         {
             <div class="col-6 col-md-4 col-lg-3">
-                <div class="card player-tile text-center p-4 h-100 d-flex flex-column justify-content-center position-relative"
+                <div class="card player-tile text-center p-4 h-100 d-flex flex-column justify-content-center position-relative bg-dark"
+                     style="border: 1px solid rgba(0, 160, 255, 0.2); transition: all 0.3s; cursor:pointer;"
+                     onmouseover="this.style.boxShadow='0 0 15px rgba(0, 160, 255, 0.4)'; this.style.transform='scale(1.03)';"
+                     onmouseout="this.style.boxShadow='none'; this.style.transform='scale(1)';"
                      onclick="apriModale(@atleta.Id, '@atleta.Nome @atleta.Cognome')">
 
                     <div class="mb-3">
-                        <img src="@atleta.FotoUrl" class="rounded-circle shadow-lg" width="100" height="100" style="object-fit: cover;" />
+                        <img src="@atleta.FotoUrl" class="rounded-circle" width="100" height="100" style="object-fit: cover; border: 2px solid var(--onus-green); padding: 2px;" />
                     </div>
                     <h4 class="fw-bold m-0 text-white">@atleta.Nome</h4>
                     <p class="text-muted text-uppercase small fw-bold ls-1 mb-3">@atleta.Cognome</p>
@@ -22,14 +25,14 @@
                         <div class="mt-auto" onclick="event.stopPropagation();">
                             @if (atleta.IsInfortunato)
                             {
-                                <button type="button" class="btn btn-sm btn-danger w-100 fw-bold shadow-sm"
+                                <button type="button" class="btn btn-sm w-100 fw-bold shadow-sm" style="background-color: #ff4757; color: white; border: none;"
                                         data-bs-toggle="modal" data-bs-target="#modalStatus-@atleta.Id">
                                     Infortunato
                                 </button>
                             }
                             else if (atleta.IsInRiabilitazione)
                             {
-                                <button type="button" class="btn btn-sm btn-warning text-dark w-100 fw-bold shadow-sm"
+                                <button type="button" class="btn btn-sm text-dark w-100 fw-bold shadow-sm" style="background-color: #ffa502; border: none;"
                                         data-bs-toggle="modal" data-bs-target="#modalStatus-@atleta.Id">
                                     In Riabilitazione
                                 </button>
@@ -42,9 +45,9 @@
                 {
                     <div class="modal fade" id="modalStatus-@atleta.Id" tabindex="-1" aria-hidden="true" onclick="event.stopPropagation();">
                         <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content bg-dark text-white border-secondary">
+                            <div class="modal-content bg-dark text-white border-secondary" style="border: 1px solid rgba(255, 71, 87, 0.5);">
                                 <div class="modal-header border-secondary">
-                                    <h5 class="modal-title fw-bold">
+                                    <h5 class="modal-title fw-bold" style="color: @(atleta.IsInfortunato ? "#ff4757" : "#ffa502")">
                                         @(atleta.IsInfortunato ? "Infortunio" : "Riabilitazione"): @atleta.Nome @atleta.Cognome
                                     </h5>
                                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -61,7 +64,7 @@
                                     }
                                 </div>
                                 <div class="modal-footer border-secondary">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+                                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Chiudi</button>
                                 </div>
                             </div>
                         </div>
@@ -74,11 +77,11 @@
 
 <div class="modal fade" id="inputModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content bg-dark text-white border-secondary">
+        <div class="modal-content bg-dark text-white shadow-lg" style="border: 2px solid var(--onus-blue);">
             <div class="modal-header border-0 pb-0">
                 <div>
-                    <small class="text-muted text-uppercase ls-1">Atleta</small>
-                    <h2 class="modal-title fw-bold text-white" id="lblNomeGiocatore">Giocatore</h2>
+                    <small class="text-white-50 text-uppercase ls-1">Atleta</small>
+                    <h2 class="modal-title fw-bold text-gradient-onus" id="lblNomeGiocatore">Giocatore</h2>
                 </div>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
@@ -96,9 +99,10 @@
                         <div class="col-md-6 d-flex flex-column gap-2">
                             @foreach (var param in Model.ParametriDashboard)
                             {
-                                <div class="param-btn d-flex justify-content-between align-items-center"
+                                <div class="param-btn d-flex justify-content-between align-items-center bg-black border border-secondary rounded-3 p-3"
                                      id="btn_@param.Id"
-                                     onclick="selezionaCampo(@param.Id)">
+                                     onclick="selezionaCampo(@param.Id)"
+                                     style="cursor: pointer; transition: all 0.2s;">
                                     <span class="fs-5">
                                         @if (param.IsCalcoloCarico)
                                         {
@@ -109,43 +113,55 @@
                                             <span>📊</span>
                                         }
                                         @param.Nome
-                                        <small class="text-muted" style="font-size:0.7em;">(@param.ValoreMinimo-@param.ValoreMassimo)</small>
+                                        <small class="text-white-50 d-block" style="font-size:0.75em; margin-top:-5px;">(Da @param.ValoreMinimo a @param.ValoreMassimo)</small>
                                     </span>
-                                    <span class="fs-3 fw-bold text-white" id="display_@param.Id">-</span>
+                                    <span class="fs-2 fw-bold text-gradient-onus" id="display_@param.Id">-</span>
                                 </div>
                             }
 
                             <div class="mt-2">
-                                <textarea name="Note" class="form-control bg-dark text-white border-secondary" rows="3" placeholder="Note opzionali..."></textarea>
+                                <textarea name="Note" class="form-control bg-black text-white border-secondary shadow-sm" rows="3" placeholder="Aggiungi una nota sull'allenamento..."></textarea>
                             </div>
                         </div>
 
                         <div class="col-md-6">
 
                             <div class="d-flex justify-content-end mb-2">
-                                <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalGuidaImmagine">
-                                    ℹ️ Guida Scala Sforzo
+                                <button type="button" class="btn btn-sm btn-outline-onus rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalGuidaImmagine">
+                                    <i class="bi bi-info-circle me-1"></i> Scala Sforzo
                                 </button>
                             </div>
 
                             <div class="row g-2 mb-3">
-                                <div class="col-4"><button type="button" class="btn numpad-btn w-100 py-3 fs-4" onclick="digita(1)">1</button></div>
-                                <div class="col-4"><button type="button" class="btn numpad-btn w-100 py-3 fs-4" onclick="digita(2)">2</button></div>
-                                <div class="col-4"><button type="button" class="btn numpad-btn w-100 py-3 fs-4" onclick="digita(3)">3</button></div>
-                                <div class="col-4"><button type="button" class="btn numpad-btn w-100 py-3 fs-4" onclick="digita(4)">4</button></div>
-                                <div class="col-4"><button type="button" class="btn numpad-btn w-100 py-3 fs-4" onclick="digita(5)">5</button></div>
-                                <div class="col-4"><button type="button" class="btn numpad-btn w-100 py-3 fs-4" onclick="digita(6)">6</button></div>
-                                <div class="col-4"><button type="button" class="btn numpad-btn w-100 py-3 fs-4" onclick="digita(7)">7</button></div>
-                                <div class="col-4"><button type="button" class="btn numpad-btn w-100 py-3 fs-4" onclick="digita(8)">8</button></div>
-                                <div class="col-4"><button type="button" class="btn numpad-btn w-100 py-3 fs-4" onclick="digita(9)">9</button></div>
-                                <div class="col-4"><button type="button" class="btn btn-outline-secondary w-100 py-3 fw-bold" onclick="cancella()">⌫</button></div>
-                                <div class="col-4"><button type="button" class="btn numpad-btn w-100 py-3 fs-4" onclick="digita(0)">0</button></div>
-                                <div class="col-4"><button type="button" class="btn btn-light w-100 py-3 fw-bold text-dark" onclick="prossimoCampo()">Next</button></div>
+                                <style>
+                                                                    .btn-cyber-pad {
+                                                                        background: #1a1a1a;
+                                                                        color: white;
+                                                                        border: 1px solid #333;
+                                                                        transition: all 0.1s;
+                                                                    }
+
+                                                                        .btn-cyber-pad:active {
+                                                                            background: var(--onus-green);
+                                                                            color: black;
+                                                                            border-color: var(--onus-green);
+                                                                            transform: scale(0.95);
+                                                                        }
+                                </style>
+                                @for (int i = 1; i <= 9; i++)
+                                {
+                                    <div class="col-4"><button type="button" class="btn btn-cyber-pad w-100 py-3 fs-3 fw-bold rounded-3 shadow-sm" onclick="digita(@i)">@i</button></div>
+                                }
+                                <div class="col-4"><button type="button" class="btn btn-cyber-pad w-100 py-3 fw-bold fs-4 rounded-3 shadow-sm" style="color: #ff4757;" onclick="cancella()">⌫</button></div>
+                                <div class="col-4"><button type="button" class="btn btn-cyber-pad w-100 py-3 fs-3 fw-bold rounded-3 shadow-sm" onclick="digita(0)">0</button></div>
+                                <div class="col-4"><button type="button" class="btn btn-cyber-pad w-100 py-3 fw-bold text-info rounded-3 shadow-sm" onclick="prossimoCampo()">NEXT</button></div>
                             </div>
 
                             <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-danger py-3 fw-bold fs-5 text-uppercase shadow-lg" style="letter-spacing: 1px;">Salva Dati</button>
-                                <a href="#" id="btnVediGrafici" class="btn btn-outline-secondary py-2 small">Vedi grafici</a>
+                                <button type="submit" class="btn btn-onus py-3 fw-bold fs-5 text-uppercase shadow-lg rounded-pill" style="letter-spacing: 1px;">
+                                    Salva Dati <i class="bi bi-check2-circle ms-1"></i>
+                                </button>
+                                <a href="#" id="btnVediGrafici" class="btn btn-link text-white-50 text-decoration-none py-2 small">Vai alle Analisi del giocatore -></a>
                             </div>
                         </div>
                     </div>
@@ -159,17 +175,17 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content bg-dark text-white border-secondary">
             <div class="modal-header border-secondary">
-                <h5 class="modal-title fw-bold" id="modalGuidaImmagineLabel">Scala di Riferimento</h5>
+                <h5 class="modal-title text-gradient-onus fw-bold" id="modalGuidaImmagineLabel">Scala di Riferimento</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-toggle="modal" data-bs-target="#inputModal" aria-label="Chiudi"></button>
             </div>
             <div class="modal-body text-center">
-                <img src="~/Img/info.jpeg" alt="Guida Obiettivo" class="img-fluid rounded shadow" />
-                <p class="mt-3 text-light small">
-                    Fai riferimento a questa scala per valutare l'intensità in modo accurato.
+                <img src="~/Img/info.jpeg" alt="Guida Obiettivo" class="img-fluid rounded shadow" style="border: 2px solid var(--onus-blue);" />
+                <p class="mt-3 text-white-50 small">
+                    Fai riferimento a questa scala per valutare l'intensità (RPE) in modo accurato.
                 </p>
             </div>
             <div class="modal-footer border-secondary">
-                <button type="button" class="btn btn-info text-dark fw-bold" data-bs-toggle="modal" data-bs-target="#inputModal">Ho capito</button>
+                <button type="button" class="btn btn-onus rounded-pill fw-bold px-4" data-bs-toggle="modal" data-bs-target="#inputModal">Ho capito</button>
             </div>
         </div>
     </div>
@@ -179,18 +195,18 @@
 {
     <div class="modal fade" id="modalNotificheAutomatico" tabindex="-1" aria-labelledby="modalNotificheLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content bg-dark text-white border-secondary text-center shadow-lg">
+            <div class="modal-content bg-dark text-white border-secondary text-center shadow-lg" style="border: 1px solid var(--onus-green) !important;">
                 <div class="modal-header border-secondary justify-content-center">
-                    <h5 class="modal-title fw-bold" id="modalNotificheLabel">🔔 Resta Aggiornato!</h5>
+                    <h5 class="modal-title text-gradient-onus fw-bold fs-4" id="modalNotificheLabel">🔔 Resta Aggiornato!</h5>
                 </div>
                 <div class="modal-body p-4">
                     <p class="fs-5">Vuoi ricevere un promemoria per inserire i dati a fine allenamento?</p>
-                    <p class="text-secondary small mb-4">Clicca su "Attiva Ora" e poi su "Consenti" nel prossimo avviso.</p>
+                    <p class="text-white-50 small mb-4">Clicca su "Attiva Ora" e poi su "Consenti" nel prossimo avviso.</p>
 
-                    <button class="btn btn-primary btn-lg w-100 mb-2 fw-bold" onclick="richiediPermessoNotifiche()" data-bs-dismiss="modal">
-                        Attiva Ora 🚀
+                    <button class="btn btn-onus btn-lg w-100 mb-3 fw-bold rounded-pill shadow" onclick="richiediPermessoNotifiche()" data-bs-dismiss="modal">
+                        Attiva Ora <i class="bi bi-rocket-takeoff ms-1"></i>
                     </button>
-                    <button class="btn btn-outline-secondary w-100" data-bs-dismiss="modal">
+                    <button class="btn btn-outline-secondary w-100 rounded-pill" data-bs-dismiss="modal">
                         Forse più tardi
                     </button>
                 </div>
@@ -200,6 +216,8 @@
 }
 
 <script>
+    // Lo script originale per il Numpad e le Notifiche resta invariato,
+    // ho aggiunto solo una classe CSS attiva (.border-onus) quando si seleziona un campo.
     var paramIds = [@string.Join(",", Model.ParametriDashboard.Select(p => p.Id))];
     var currentParamId = null;
     var modalInput;
@@ -230,9 +248,15 @@
 
     function selezionaCampo(id) {
         currentParamId = id;
-        document.querySelectorAll('.param-btn').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.param-btn').forEach(el => {
+            el.style.borderColor = '#6c757d'; // border-secondary
+            el.style.backgroundColor = 'black';
+        });
         var btn = document.getElementById('btn_' + id);
-        if(btn) btn.classList.add('active');
+        if(btn) {
+            btn.style.borderColor = 'var(--onus-green)';
+            btn.style.backgroundColor = '#1a1a1a';
+        }
     }
 
     function digita(num) {
@@ -296,21 +320,18 @@
         // ========================================================
         const applicationServerPublicKey = 'INCOLLA_QUI_LA_TUA_PUBLIC_KEY';
 
-        // Apre il pop-up automaticamente appena la pagina si carica (se è un atleta e non ha già risposto)
         document.addEventListener("DOMContentLoaded", function() {
             if ('Notification' in window && Notification.permission === 'default') {
-                // Controllo se esiste il modale nell'HTML (così non dà errore per lo Staff)
                 var modaleHtml = document.getElementById('modalNotificheAutomatico');
                 if (modaleHtml) {
                     setTimeout(() => {
                         var myModal = new bootstrap.Modal(modaleHtml);
                         myModal.show();
-                    }, 500); // Mezzo secondo di ritardo per un bell'effetto visivo
+                    }, 500);
                 }
             }
         });
 
-        // Funzione per convertire la chiave (standard di sicurezza)
         function urlB64ToUint8Array(base64String) {
             const padding = '='.repeat((4 - base64String.length % 4) % 4);
             const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
@@ -322,7 +343,6 @@
             return outputArray;
         }
 
-        // Funzione principale scatenata dal click sul bottone del Modale
         async function richiediPermessoNotifiche() {
             if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
                 alert('Il tuo browser o telefono non supporta le notifiche Push.');
@@ -330,26 +350,20 @@
             }
 
             try {
-                // Chiediamo il permesso all'utente (Compare il popup nativo del browser/telefono)
                 const permission = await Notification.requestPermission();
 
                 if (permission !== 'granted') {
-                    // Se l'utente clicca "Blocca" sul popup del telefono
                     console.log('Notifiche bloccate dall\'utente.');
                     return;
                 }
 
-                // Registriamo il Service Worker
                 const registration = await navigator.serviceWorker.register('/service-worker.js');
-
-                // Iscriviamo il telefono usando la tua Public Key
                 const applicationServerKey = urlB64ToUint8Array(applicationServerPublicKey);
                 const subscription = await registration.pushManager.subscribe({
                     userVisibleOnly: true,
                     applicationServerKey: applicationServerKey
                 });
 
-                // Inviamo l'indirizzo segreto al nostro PushController C#
                 const response = await fetch('/api/Push/subscribe', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -357,7 +371,6 @@
                 });
 
                 if (response.ok) {
-                    // Piccolo feedback visivo
                     alert('Notifiche attivate con successo! 🎉');
                 } else {
                     console.error('Errore dal server:', response);

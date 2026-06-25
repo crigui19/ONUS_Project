@@ -5,18 +5,18 @@
 }
 
 <div class="container py-4">
-    <h2 class="mb-4 text-white fw-bold text-uppercase tracking-wide border-start border-4 border-danger ps-3">
+    <h2 class="mb-4 text-white fw-bold text-uppercase tracking-wide border-start border-4 ps-3" style="border-color: var(--onus-green) !important;">
         @(Model.IsStaff ? "Analisi Prestazione" : "Il Mio Andamento")
     </h2>
 
     @if (Model.IsStaff)
     {
-        <div class="card mb-4 border-0 shadow-lg" style="background: #2c2c2c;">
+        <div class="card mb-4 border-secondary shadow-lg bg-dark" style="border: 1px solid rgba(0, 160, 255, 0.2) !important;">
             <div class="card-body p-3">
                 <form method="get" class="row align-items-center g-3">
-                    <div class="col-auto"><label class="fw-bold text-white">Atleta:</label></div>
+                    <div class="col-auto"><label class="fw-bold text-white-50">Atleta:</label></div>
                     <div class="col-md-4">
-                        <select name="atletaId" class="form-select bg-dark text-white border-secondary" onchange="this.form.submit()">
+                        <select name="atletaId" class="form-select bg-black text-white border-secondary shadow-sm" onchange="this.form.submit()">
                             <option value="">-- Scegli un giocatore --</option>
                             @foreach (var a in Model.Atleti)
                             {
@@ -27,9 +27,9 @@
                         </select>
                     </div>
 
-                    <div class="col-auto ms-auto"><label class="fw-bold text-white">Filtro Tempo:</label></div>
+                    <div class="col-auto ms-auto"><label class="fw-bold text-white-50">Filtro Tempo:</label></div>
                     <div class="col-md-4">
-                        <select name="filtroTempo" class="form-select bg-dark text-white border-warning" onchange="this.form.submit()">
+                        <select name="filtroTempo" class="form-select bg-black text-white shadow-sm" style="border-color: var(--onus-blue) !important;" onchange="this.form.submit()">
                             <option value="tutto" selected="@(Request.Query["filtroTempo"] == "tutto" || string.IsNullOrEmpty(Request.Query["filtroTempo"]) ? "selected" : null)">Intera Stagione</option>
                             <option value="ultimi7" selected="@(Request.Query["filtroTempo"] == "ultimi7" ? "selected" : null)">Ultimi 7 allenamenti</option>
                             <option value="ultimaSettimana" selected="@(Request.Query["filtroTempo"] == "ultimaSettimana" ? "selected" : null)">Ultima settimana</option>
@@ -37,8 +37,8 @@
                         </select>
                     </div>
                     <div class="col-auto ms-3 border-start border-secondary ps-4">
-                        <a asp-page="/Report" class="btn btn-success fw-bold shadow-sm">
-                            📄 CREA REPORT
+                        <a asp-page="/Report" class="btn btn-outline-onus fw-bold shadow-sm rounded-pill px-3">
+                            <i class="bi bi-file-earmark-pdf me-1"></i> CREA REPORT
                         </a>
                     </div>
                 </form>
@@ -50,18 +50,18 @@
     {
         <div class="d-flex align-items-center mb-4">
             <div>
-                <h3 class="text-white m-0">@Model.NomeAtletaSelezionato</h3>
+                <h3 class="text-gradient-onus m-0 fw-bold tracking-wide">@Model.NomeAtletaSelezionato</h3>
                 <div class="mt-1">
-                    <span class="badge bg-dark border border-secondary text-secondary me-2">
-                        <i class="bi bi-rulers"></i> @Model.AltezzaAtleta cm
+                    <span class="badge bg-black border border-secondary text-white-50 me-2 py-2 px-3 rounded-pill shadow-sm">
+                        <i class="bi bi-rulers text-info"></i> @Model.AltezzaAtleta cm
                     </span>
-                    <span class="badge bg-dark border border-secondary text-secondary">
-                        <i class="bi bi-speedometer2"></i> @Model.PesoAtleta kg
+                    <span class="badge bg-black border border-secondary text-white-50 py-2 px-3 rounded-pill shadow-sm">
+                        <i class="bi bi-speedometer2 text-info"></i> @Model.PesoAtleta kg
                     </span>
                     @if (Model.AltezzaAtleta > 0)
                     {
                         var bmi = Math.Round(Model.PesoAtleta / Math.Pow(Model.AltezzaAtleta / 100.0, 2), 1);
-                        <span class="text-white-50 small"><i class="bi bi-activity text-danger"></i> BMI: @bmi</span>
+                        <span class="text-white-50 small ms-3"><i class="bi bi-activity" style="color: var(--onus-green);"></i> BMI: @bmi</span>
                     }
                 </div>
             </div>
@@ -69,7 +69,7 @@
 
         <div class="row g-4 mb-4">
             <div class="col-lg-6">
-                <div class="card h-100 border-0 shadow-lg chart-container">
+                <div class="card h-100 shadow-lg chart-container bg-dark" style="border: 1px solid rgba(0, 160, 255, 0.2);">
                     <div class="card-body">
                         <canvas id="graficoACWR" style="max-height: 350px;"></canvas>
                     </div>
@@ -77,48 +77,51 @@
             </div>
 
             <div class="col-lg-3">
-                <div class="card h-100 border-0 shadow-lg acwr-box d-flex align-items-center justify-content-center">
-                    <div class="text-center">
+                <div class="card h-100 shadow-lg acwr-box d-flex align-items-center justify-content-center bg-dark" style="border: 1px solid rgba(0, 160, 255, 0.2);">
+                    <div class="text-center p-3">
                         <h6 class="text-white-50 text-uppercase ls-1 mb-2">Ratio Acuto : Cronico</h6>
-                        <h1 class="display-3 fw-bold text-white m-0">@Model.DatiACWR.LastOrDefault()</h1>
+                        <h1 class="display-3 fw-bold text-gradient-onus m-0">@Model.DatiACWR.LastOrDefault()</h1>
                         @{
                             double acwr = Model.DatiACWR.LastOrDefault();
-                            string statusClass = (acwr >= 0.8 && acwr <= 1.3) ? "bg-success" : "bg-warning text-dark";
+                            string statusClass = (acwr >= 0.8 && acwr <= 1.3) ? "bg-black text-white border-onus" : "bg-black text-white border-danger";
                             string statusText = (acwr >= 0.8 && acwr <= 1.3) ? "OPTIMAL" : "ATTENZIONE";
+                            string dotColor = (acwr >= 0.8 && acwr <= 1.3) ? "var(--onus-green)" : "#ff4757";
                         }
                         <div class="mt-3">
-                            <span class="badge @statusClass px-4 py-2 rounded-pill fw-bold shadow-sm">@statusText</span>
+                            <span class="badge @statusClass px-4 py-2 rounded-pill fw-bold shadow-sm" style="border: 1px solid @dotColor;">
+                                <span style="color: @dotColor; margin-right: 5px;">●</span> @statusText
+                            </span>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="col-lg-3">
-                <div class="card h-100 border-0 shadow-lg d-flex align-items-center justify-content-center" style="background: #1a1a1a; border-left: 4px solid #0d6efd !important;">
+                <div class="card h-100 shadow-lg d-flex align-items-center justify-content-center bg-dark" style="border: 1px solid rgba(0, 160, 255, 0.2); border-left: 4px solid var(--onus-blue) !important;">
                     <div class="text-center p-3">
-                        <h6 class="text-primary text-uppercase ls-1 mb-2">Weekly Player Load</h6>
+                        <h6 class="text-uppercase ls-1 mb-2" style="color: var(--onus-blue);">Weekly Player Load</h6>
                         <h1 class="display-3 fw-bold text-white m-0">@Model.CaricoSettimanale</h1>
                         <div class="mt-3">
-                            <span class="text-muted small">Somma ultimi 7 gg</span>
+                            <span class="badge bg-black border border-secondary text-white-50 rounded-pill px-3 py-2">Somma ultimi 7 gg</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <h4 class="mb-3 text-white border-bottom border-secondary pb-2">Storico Sessioni</h4>
-        <div class="card border-0 shadow-lg overflow-hidden mb-5">
+        <h4 class="mb-3 text-gradient-onus fw-bold tracking-wide border-bottom border-secondary pb-2">STORICO SESSIONI</h4>
+        <div class="card shadow-lg overflow-hidden mb-5 bg-dark" style="border: 1px solid rgba(0, 160, 255, 0.2);">
             <div class="table-responsive">
                 <table class="table table-dark table-hover align-middle m-0">
                     <thead>
-                        <tr class="text-uppercase text-muted small ls-1">
+                        <tr class="text-uppercase text-white-50 small ls-1" style="border-bottom: 2px solid var(--onus-blue);">
                             <th class="py-3 ps-4">Data</th>
                             <th class="text-center">Durata Tot.</th>
                             <th class="text-center">Tempo Eff.</th>
                             <th class="text-center">Carico</th>
                             <th class="">Dati Monitorati</th>
                             <th style="width: 25%;">Note</th>
-                            <th class="text-end pe-4">Modifica</th>
+                            <th class="text-end pe-4">Azioni</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -128,38 +131,38 @@
                             var valSonno = s.Valori.FirstOrDefault(v => v.Parametro.Nome.Contains("Sonno"))?.Valore ?? 0;
                             var valDolore = s.Valori.FirstOrDefault(v => v.Parametro.Nome.Contains("Dolore") || v.Parametro.Nome.Contains("Indolenzimento"))?.Valore ?? 0;
 
-                            <tr>
-                                <td class="ps-4 fw-bold text-white">
+                            <tr style="border-bottom: 1px solid #333;">
+                                <td class="ps-4 fw-bold text-white py-3">
                                     @s.Data.ToString("dd/MM/yy")
-                                    <small class="badge bg-secondary">@s.Data.ToString("HH:mm")</small>
+                                    <small class="badge bg-black border border-secondary ms-2 text-white-50">@s.Data.ToString("HH:mm")</small>
                                 </td>
-                                
-                                <td class="text-center"><span class="badge bg-secondary">@s.DurataTotaleMinuti'</span></td>
-                                <td class="text-center"><span class="badge bg-info text-dark">@s.TempoEffettivoMinuti'</span></td>
-                                <td class="text-center fw-bold text-primary">@s.CaricoCalcolato</td>
+
+                                <td class="text-center"><span class="badge bg-black border border-secondary text-white">@s.DurataTotaleMinuti'</span></td>
+                                <td class="text-center"><span class="badge bg-black text-white" style="border: 1px solid var(--onus-blue);">@s.TempoEffettivoMinuti'</span></td>
+                                <td class="text-center fw-bold fs-5 text-gradient-onus">@s.CaricoCalcolato</td>
 
                                 <td>
                                     <div class="d-flex flex-wrap gap-2">
                                         @foreach (var val in s.Valori)
                                         {
-                                            <div class="d-flex align-items-center bg-black bg-opacity-25 border border-secondary rounded px-2 py-1">
-                                                <small class="text-uppercase me-2" style="font-size: 0.7em; letter-spacing: 0.5px;">
+                                            <div class="d-flex align-items-center bg-black border border-secondary rounded-pill px-3 py-1 shadow-sm">
+                                                <small class="text-uppercase me-2 text-white-50" style="font-size: 0.65em; letter-spacing: 0.5px;">
                                                     @val.Parametro.Nome
                                                 </small>
-                                                <span class="fw-bold text-white">@val.Valore</span>
+                                                <span class="fw-bold" style="color: var(--onus-green);">@val.Valore</span>
                                             </div>
                                         }
                                     </div>
                                 </td>
 
-                                <td class="small text-truncate" style="max-width: 150px;">
+                                <td class="small text-white-50 fst-italic text-truncate" style="max-width: 150px;">
                                     @(string.IsNullOrEmpty(s.Note) ? "-" : s.Note)
                                 </td>
-                                
+
                                 <td class="text-end pe-4">
-                                    <button class="btn btn-sm btn-outline-warning border-0"
+                                    <button class="btn btn-sm btn-outline-onus rounded-pill px-3 shadow-sm"
                                             onclick="apriModificaSessione(@s.Id, '@s.Data.ToString("yyyy-MM-ddTHH:mm")', @s.DurataTotaleMinuti, @s.TempoEffettivoMinuti, @valRpe, @valSonno, @valDolore, '@Html.Raw(s.Note?.Replace("'", "\\'"))')">
-                                        ✏️ EDIT
+                                        <i class="bi bi-pencil-square me-1"></i> Edit
                                     </button>
                                 </td>
                             </tr>
@@ -169,52 +172,53 @@
             </div>
         </div>
 
+        <!-- Modale Modifica Sessione -->
         <div class="modal fade" id="sessionModal" tabindex="-1">
             <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content bg-dark border border-secondary text-white shadow-lg">
+                <div class="modal-content bg-dark text-white shadow-lg" style="border: 1px solid var(--onus-blue) !important;">
                     <div class="modal-header border-secondary">
-                        <h5 class="modal-title fw-bold text-warning">Modifica Sessione</h5>
+                        <h5 class="modal-title fw-bold text-gradient-onus tracking-wide">MODIFICA SESSIONE</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
-                    <div class="modal-body">
+                    <div class="modal-body p-4">
                         <form method="post" asp-page-handler="UpdateSession">
                             <input type="hidden" id="editSessionId" name="sessionId" />
 
                             <div class="row g-3">
-                                <div class="col-md-4">
-                                    <label class="form-label text-muted small">Data e Ora</label>
-                                    <input type="datetime-local" id="editData" name="data" class="form-control bg-secondary text-white border-0" required />
+                                <div class="col-md-4 form-floating">
+                                    <input type="datetime-local" id="editData" name="data" class="form-control bg-black text-white border-secondary shadow-sm" required />
+                                    <label for="editData" class="text-white-50 ms-2">Data e Ora</label>
                                 </div>
-                                <div class="col-md-4">
-                                    <label class="form-label text-muted small">Durata Totale (min)</label>
-                                    <input type="number" id="editDurataTotale" name="durataTotale" class="form-control bg-secondary text-white border-0" required />
+                                <div class="col-md-4 form-floating">
+                                    <input type="number" id="editDurataTotale" name="durataTotale" class="form-control bg-black text-white border-secondary shadow-sm" required />
+                                    <label for="editDurataTotale" class="text-white-50 ms-2">Durata Tot. (min)</label>
                                 </div>
-                                <div class="col-md-4">
-                                    <label class="form-label text-muted small">Tempo Effettivo (min)</label>
-                                    <input type="number" id="editTempoEffettivo" name="tempoEffettivo" class="form-control bg-secondary text-white border-0" required />
-                                </div>
-
-                                <div class="col-4">
-                                    <label class="form-label text-muted small">RPE (0-10)</label>
-                                    <input type="number" id="editRpe" name="rpe" min="0" max="10" class="form-control bg-secondary text-white border-0 fw-bold text-center" required />
-                                </div>
-                                <div class="col-4">
-                                    <label class="form-label text-muted small">Sonno</label>
-                                    <input type="number" id="editSonno" name="sonno" min="0" max="10" class="form-control bg-secondary text-white border-0 text-center" required />
-                                </div>
-                                <div class="col-4">
-                                    <label class="form-label text-muted small">Dolore</label>
-                                    <input type="number" id="editDolore" name="dolore" min="0" max="10" class="form-control bg-secondary text-white border-0 text-center" required />
+                                <div class="col-md-4 form-floating">
+                                    <input type="number" id="editTempoEffettivo" name="tempoEffettivo" class="form-control bg-black text-white border-secondary shadow-sm" required />
+                                    <label for="editTempoEffettivo" class="text-white-50 ms-2">Tempo Eff. (min)</label>
                                 </div>
 
-                                <div class="col-12">
-                                    <label class="form-label text-muted small">Note</label>
-                                    <textarea id="editNote" name="note" class="form-control bg-secondary text-white border-0" rows="3"></textarea>
+                                <div class="col-4 mt-4 text-center">
+                                    <label class="form-label text-white-50 small text-uppercase">RPE (0-10)</label>
+                                    <input type="number" id="editRpe" name="rpe" min="0" max="10" class="form-control bg-black text-white shadow-sm fw-bold text-center fs-4" style="border: 1px solid var(--onus-green);" required />
+                                </div>
+                                <div class="col-4 mt-4 text-center">
+                                    <label class="form-label text-white-50 small text-uppercase">Sonno</label>
+                                    <input type="number" id="editSonno" name="sonno" min="0" max="10" class="form-control bg-black text-white border-secondary shadow-sm text-center fs-4" required />
+                                </div>
+                                <div class="col-4 mt-4 text-center">
+                                    <label class="form-label text-white-50 small text-uppercase">Dolore</label>
+                                    <input type="number" id="editDolore" name="dolore" min="0" max="10" class="form-control bg-black text-white border-secondary shadow-sm text-center fs-4" required />
+                                </div>
+
+                                <div class="col-12 mt-4">
+                                    <label class="form-label text-white-50 small text-uppercase ms-1">Note Opzionali</label>
+                                    <textarea id="editNote" name="note" class="form-control bg-black text-white border-secondary shadow-sm" rows="3" placeholder="Aggiungi una nota..."></textarea>
                                 </div>
                             </div>
 
-                            <div class="d-grid mt-4">
-                                <button type="submit" class="btn btn-warning fw-bold">SALVA MODIFICHE</button>
+                            <div class="d-grid mt-4 pt-3 border-top border-secondary">
+                                <button type="submit" class="btn btn-onus rounded-pill py-3 fw-bold shadow-lg">SALVA MODIFICHE <i class="bi bi-check2-circle ms-1"></i></button>
                             </div>
                         </form>
                     </div>
@@ -225,7 +229,6 @@
         @section Scripts {
             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
             <script>
-                // Funzione per popolare il modale
                 function apriModificaSessione(id, dataStr, durataTotale, tempoEffettivo, rpe, sonno, dolore, note) {
                 document.getElementById('editSessionId').value = id;
                 document.getElementById('editData').value = dataStr;
@@ -249,12 +252,13 @@
                 const dataChronic = @Html.Raw(Json.Serialize(Model.DatiChronic));
                 const dataZScore = @Html.Raw(Json.Serialize(Model.DatiZScore));
 
+                // Aggiorniamo i colori del grafico con il nuovo verde fluo
                 let gradientAcute = ctx.createLinearGradient(0, 0, 0, 400);
-                gradientAcute.addColorStop(0, 'rgba(255, 71, 87, 0.4)');
-                gradientAcute.addColorStop(1, 'rgba(255, 71, 87, 0)');
+                gradientAcute.addColorStop(0, 'rgba(113, 217, 45, 0.5)'); // Verde ONUS con trasparenza
+                gradientAcute.addColorStop(1, 'rgba(113, 217, 45, 0)');
 
-                Chart.defaults.color = '#a0a0a0';
-                Chart.defaults.borderColor = '#444';
+                Chart.defaults.color = '#888';
+                Chart.defaults.borderColor = '#333';
 
                 new Chart(ctx, {
                 type: 'line',
@@ -264,10 +268,10 @@
                 {
                 label: 'Acute Load (7gg)',
                 data: dataAcute,
-                borderColor: '#ff4757',
+                borderColor: '#71d92d', // Verde ONUS
                 backgroundColor: gradientAcute,
                 borderWidth: 3,
-                pointBackgroundColor: '#ff4757',
+                pointBackgroundColor: '#71d92d',
                 pointRadius: 4,
                 tension: 0.4,
                 fill: true,
@@ -276,8 +280,8 @@
                 {
                 label: 'Chronic Load (28gg)',
                 data: dataChronic,
-                borderColor: '#3742fa',
-                backgroundColor: 'rgba(55, 66, 250, 0.1)',
+                borderColor: '#00a0ff', // Azzurro ONUS
+                backgroundColor: 'rgba(0, 160, 255, 0.1)',
                 borderWidth: 2,
                 pointRadius: 0,
                 borderDash: [5, 5],
@@ -288,7 +292,7 @@
                 {
                 label: 'Z-Score (Load)',
                 data: dataZScore,
-                borderColor: '#f1c40f',
+                borderColor: '#f1c40f', // Lasciamo il giallo per lo Z-Score
                 borderWidth: 2,
                 pointBackgroundColor: '#f1c40f',
                 pointRadius: 3,
@@ -307,7 +311,7 @@
                 y: {
                 beginAtZero: true,
                 position: 'left',
-                grid: { color: '#333' }
+                grid: { color: '#2a2a2a' }
                 },
                 y1: {
                 beginAtZero: false,
@@ -327,8 +331,11 @@
     else
     {
         <div class="d-flex flex-column align-items-center justify-content-center" style="height: 50vh;">
-            <h1 class="display-1 text-muted mb-3" style="opacity: 0.2;">📊</h1>
-            <h3 class="text-white">Nessun atleta selezionato</h3>
+            <div class="rounded-circle d-flex align-items-center justify-content-center mb-4 shadow" style="width: 120px; height: 120px; border: 2px dashed rgba(0, 160, 255, 0.4); background-color: #1a1a1a;">
+                <i class="bi bi-bar-chart-line" style="font-size: 3rem; color: rgba(0, 160, 255, 0.5);"></i>
+            </div>
+            <h3 class="text-white fw-bold tracking-wide">Nessun Atleta Selezionato</h3>
+            <p class="text-white-50">Scegli un giocatore dal menu a tendina in alto per visualizzare le sue statistiche.</p>
         </div>
     }
 </div>

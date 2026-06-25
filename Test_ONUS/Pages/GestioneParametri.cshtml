@@ -5,31 +5,32 @@
 }
 
 <div class="container py-4">
-    
+
     @if (TempData["Errore"] != null)
     {
-        <div class="alert alert-danger fw-bold shadow-sm mb-4 d-flex align-items-center">
-            <span class="fs-4 me-3">⚠️</span>
+        <div class="alert bg-danger bg-opacity-25 border border-danger text-white fw-bold shadow-sm mb-4 d-flex align-items-center rounded-3">
+            <i class="bi bi-exclamation-triangle-fill fs-4 me-3 text-warning"></i>
             @TempData["Errore"]
         </div>
     }
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-white fw-bold text-uppercase border-start border-4 border-primary ps-3">
-            Gestione Parametri
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary pb-3">
+        <h2 class="text-white fw-bold text-uppercase tracking-wide border-start border-4 ps-3 m-0" style="border-color: var(--onus-blue) !important;">
+            <span class="text-gradient-onus">Gestione</span> Parametri
         </h2>
-        <button class="btn btn-primary fw-bold shadow-sm" onclick="apriModale(0, '', 0, 10, false, true)">
-            + NUOVO PARAMETRO
+        <button class="btn btn-onus rounded-pill fw-bold shadow-lg px-4" onclick="apriModale(0, '', 0, 10, false, true)">
+            <i class="bi bi-plus-lg me-1"></i> NUOVO PARAMETRO
         </button>
     </div>
 
-    <div class="card border-0 shadow-lg bg-dark">
+    <!-- Tabella Parametri -->
+    <div class="card border-0 shadow-lg bg-dark overflow-hidden" style="border: 1px solid rgba(0, 160, 255, 0.2) !important;">
         <div class="table-responsive">
             <table class="table table-dark table-hover align-middle m-0">
                 <thead>
-                    <tr class="text-uppercase text-muted small ls-1">
-                        <th class="ps-4 py-3">Nome</th>
-                        <th class="text-center">Range</th>
+                    <tr class="text-uppercase text-white-50 small ls-1" style="border-bottom: 2px solid var(--onus-blue);">
+                        <th class="ps-4 py-3">Nome Parametro</th>
+                        <th class="text-center">Range Valori</th>
                         <th class="text-center">Ruolo</th>
                         <th class="text-center">Stato</th>
                         <th class="text-end pe-4">Azioni</th>
@@ -43,39 +44,53 @@
                                         p.Nome.Contains("Sonno", StringComparison.OrdinalIgnoreCase) ||
                                         p.Nome.Equals("Stress", StringComparison.OrdinalIgnoreCase));
 
-                        <tr>
+                        <tr style="border-bottom: 1px solid #333;">
                             <td class="ps-4 fw-bold text-white fs-5">@p.Nome</td>
-                            <td class="text-center text-white-50">@p.ValoreMinimo - @p.ValoreMassimo</td>
+                            <td class="text-center text-white-50">
+                                <span class="badge bg-black border border-secondary text-white-50 px-3 py-2 rounded-pill">
+                                    Da @p.ValoreMinimo a @p.ValoreMassimo
+                                </span>
+                            </td>
                             <td class="text-center">
                                 @if (p.IsCalcoloCarico)
                                 {
-                                    <span class="badge bg-warning text-dark">CALCOLO CARICO (RPE)</span>
+                                    <span class="badge bg-black border fw-bold px-3 py-2 rounded-pill shadow-sm" style="border-color: var(--onus-green); color: var(--onus-green); letter-spacing: 1px;">
+                                        🔥 CALCOLO CARICO (RPE)
+                                    </span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-secondary">Monitoraggio</span>
+                                    <span class="badge bg-black border border-secondary text-white-50 px-3 py-2 rounded-pill shadow-sm" style="letter-spacing: 1px;">
+                                        📊 MONITORAGGIO
+                                    </span>
                                 }
                             </td>
                             <td class="text-center">
                                 @if (p.IsAttivo)
                                 {
-                                    <span class="badge bg-success">ATTIVO</span>
+                                    <span class="badge bg-black border text-white px-3 py-2 rounded-pill shadow-sm" style="border-color: var(--onus-green);">
+                                        <span style="color: var(--onus-green); margin-right: 4px;">●</span> ATTIVO
+                                    </span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-danger">INATTIVO</span>
+                                    <span class="badge bg-black border border-secondary text-white-50 px-3 py-2 rounded-pill">
+                                        <span class="text-danger" style="margin-right: 4px;">●</span> INATTIVO
+                                    </span>
                                 }
                             </td>
                             <td class="text-end pe-4">
                                 @if (isFisso)
                                 {
-                                    <span class="badge bg-secondary border border-secondary text-white-50 p-2">🔒 DI SISTEMA</span>
+                                    <span class="badge bg-dark border border-secondary text-white-50 px-3 py-2 rounded-pill">
+                                        <i class="bi bi-lock-fill me-1"></i> DI SISTEMA
+                                    </span>
                                 }
                                 else
                                 {
-                                    <button class="btn btn-sm btn-outline-info me-2"
+                                    <button class="btn btn-sm btn-outline-onus rounded-pill px-3 shadow-sm"
                                             onclick="apriModale(@p.Id, '@Html.Raw(p.Nome.Replace("'", "\\'"))', @p.ValoreMinimo, @p.ValoreMassimo, @(p.IsCalcoloCarico.ToString().ToLower()), @(p.IsAttivo.ToString().ToLower()))">
-                                        ✏️ MODIFICA
+                                        <i class="bi bi-pencil-square me-1"></i> Modifica
                                     </button>
                                 }
                             </td>
@@ -87,48 +102,53 @@
     </div>
 </div>
 
+<!-- Modale Gestione Parametro -->
 <div class="modal fade" id="modalParametro" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-dark border border-secondary text-white shadow-lg">
+        <div class="modal-content bg-dark text-white shadow-lg" style="border: 1px solid var(--onus-blue) !important;">
             <div class="modal-header border-secondary">
-                <h5 class="modal-title fw-bold" id="modalTitle">Nuovo Parametro</h5>
+                <h5 class="modal-title fw-bold text-gradient-onus tracking-wide" id="modalTitle">Nuovo Parametro</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body p-4">
                 <form method="post" asp-page-handler="Save">
                     <input type="hidden" id="pId" name="Id" value="0" />
 
-                    <div class="mb-3">
-                        <label class="form-label text-muted small">Nome Parametro</label>
-                        <input type="text" id="pNome" name="Nome" class="form-control bg-secondary text-white border-0 fw-bold" placeholder="Es. Stress, Idratazione..." required />
+                    <div class="form-floating mb-3">
+                        <input type="text" id="pNome" name="Nome" class="form-control bg-black text-white border-secondary shadow-sm fw-bold" placeholder="Nome" required />
+                        <label for="pNome" class="text-white-50">Nome Parametro (es. Idratazione)</label>
                     </div>
 
-                    <div class="row g-3 mb-3">
-                        <div class="col-6">
-                            <label class="form-label text-muted small">Minimo</label>
-                            <input type="number" id="pMin" name="ValoreMinimo" class="form-control bg-secondary text-white border-0 text-center" value="0" required />
+                    <div class="row g-3 mb-4">
+                        <div class="col-6 form-floating">
+                            <input type="number" id="pMin" name="ValoreMinimo" class="form-control bg-black text-white border-secondary shadow-sm text-center fs-5" value="0" required />
+                            <label for="pMin" class="text-white-50 ms-2">Valore Minimo</label>
                         </div>
-                        <div class="col-6">
-                            <label class="form-label text-muted small">Massimo</label>
-                            <input type="number" id="pMax" name="ValoreMassimo" class="form-control bg-secondary text-white border-0 text-center" value="10" required />
+                        <div class="col-6 form-floating">
+                            <input type="number" id="pMax" name="ValoreMassimo" class="form-control bg-black text-white border-secondary shadow-sm text-center fs-5" value="10" required />
+                            <label for="pMax" class="text-white-50 ms-2">Valore Massimo</label>
                         </div>
                     </div>
 
-                    <div class="form-check form-switch mb-3 p-3 rounded bg-secondary bg-opacity-25 border border-secondary">
-                        <input class="form-check-input" type="checkbox" id="pIsCalcoloCarico" name="IsCalcoloCarico" value="true">
-                        <label class="form-check-label text-warning fw-bold" for="pIsCalcoloCarico">
-                            Usa per calcolo Carico (RPE)
-                        </label>
-                        <div class="small text-muted mt-1">Se attivo, questo parametro verrà moltiplicato per la durata per ottenere il carico.</div>
+                    <div class="form-check form-switch mb-3 p-3 rounded-3 bg-black border shadow-sm d-flex align-items-center gap-3" style="border-color: rgba(0, 160, 255, 0.3) !important;">
+                        <input class="form-check-input mt-0" type="checkbox" id="pIsCalcoloCarico" name="IsCalcoloCarico" value="true" style="transform: scale(1.3);">
+                        <div>
+                            <label class="form-check-label fw-bold" style="color: var(--onus-blue);" for="pIsCalcoloCarico">
+                                Usa per calcolo Carico (RPE)
+                            </label>
+                            <div class="small text-white-50 mt-1" style="font-size: 0.85em; line-height: 1.2;">Se attivo, questo parametro verrà moltiplicato per i minuti della sessione per ottenere il Player Load.</div>
+                        </div>
                     </div>
 
-                    <div class="form-check form-switch mb-3">
-                        <input class="form-check-input" type="checkbox" id="pIsAttivo" name="IsAttivo" value="true" checked>
-                        <label class="form-check-label text-white" for="pIsAttivo">Parametro Attivo</label>
+                    <div class="form-check form-switch p-3 rounded-3 bg-black border shadow-sm d-flex align-items-center gap-3" style="border-color: rgba(113, 217, 45, 0.3) !important;">
+                        <input class="form-check-input mt-0" type="checkbox" id="pIsAttivo" name="IsAttivo" value="true" checked style="transform: scale(1.3);">
+                        <label class="form-check-label text-white fw-bold" for="pIsAttivo">Parametro Attivo e Visibile</label>
                     </div>
 
-                    <div class="d-grid mt-4">
-                        <button type="submit" class="btn btn-primary fw-bold py-2">SALVA</button>
+                    <div class="d-grid mt-4 pt-3 border-top border-secondary">
+                        <button type="submit" class="btn btn-onus rounded-pill fw-bold py-3 shadow-lg fs-5">
+                            SALVA PARAMETRO <i class="bi bi-check2-circle ms-1"></i>
+                        </button>
                     </div>
                 </form>
             </div>
@@ -147,7 +167,7 @@
             document.getElementById('pIsCalcoloCarico').checked = isCalcolo;
             document.getElementById('pIsAttivo').checked = isAttivo;
 
-            document.getElementById('modalTitle').innerText = id === 0 ? "Nuovo Parametro" : "Modifica Parametro";
+            document.getElementById('modalTitle').innerText = id === 0 ? "NUOVO PARAMETRO" : "MODIFICA " + nome.toUpperCase();
 
             new bootstrap.Modal(document.getElementById('modalParametro')).show();
         }

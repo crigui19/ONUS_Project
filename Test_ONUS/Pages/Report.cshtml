@@ -1,161 +1,155 @@
 ﻿@page
 @model Test_ONUS.Pages.ReportModel
 @{
-    ViewData["Title"] = "Report PDF";
+    ViewData["Title"] = "Report Atleta";
+    Layout = "_Layout"; // Assicuriamoci che usi il layout principale
 }
+
+<style>
+    /* STILE PER LA SCHERMATA (Tema Cyber) */
+    .report-card {
+        border: 1px solid rgba(0, 160, 255, 0.3) !important;
+        box-shadow: 0 0 20px rgba(0, 160, 255, 0.1);
+        background-color: #1a1a1a;
+    }
+
+    /* STILE SPECIFICO PER LA STAMPA SU CARTA */
+    @media print {
+        /* Nasconde Navbar, Footer e pulsanti durante la stampa */
+        header, footer, .no-print, .offcanvas-backdrop { display: none !important; }
+        
+        /* Forza i colori a Bianco e Nero per la carta */
+        body, .report-card, .card, .bg-dark, .bg-black { 
+            background-color: white !important; 
+            color: black !important; 
+            box-shadow: none !important;
+            border: none !important;
+        }
+        
+        /* Rimuove i gradienti e forza il testo scuro */
+        .text-gradient-onus, .text-white, .text-white-50, .text-info { 
+            background: none !important;
+            -webkit-text-fill-color: black !important;
+            color: black !important; 
+        }
+
+        /* Bordo semplice per la tabella stampata */
+        table, th, td, tr { border: 1px solid #ddd !important; }
+        .badge { border: 1px solid #000 !important; color: #000 !important; background: transparent !important; }
+        
+        /* Margini pagina */
+        @page { margin: 1cm; }
+    }
+</style>
 
 <div class="container py-4">
-    <h2 class="mb-4 text-white fw-bold text-uppercase border-start border-4 border-success ps-3">Generazione Report</h2>
-
-    <div class="card mb-4 border-0 shadow-lg" style="background: #2c2c2c;">
-        <div class="card-body p-4 text-white">
-            <form method="get" class="row g-3 align-items-end">
-                <div class="col-md-4">
-                    <label class="form-label fw-bold">Atleta</label>
-                    <select name="atletaId" class="form-select bg-dark text-white border-secondary">
-                        <option value="tutti">Tutta la squadra (Team)</option>
-                        @foreach (var a in Model.Atleti)
-                        {
-                            <option value="@a.Id" selected="@(Request.Query["atletaId"] == a.Id.ToString() ? "selected" : null)">@a.Nome @a.Cognome</option>
-                        }
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label fw-bold">Periodo</label>
-                    <select name="filtroTempo" class="form-select bg-dark text-white border-secondary">
-                        <option value="ultimoMese">Ultimo Mese</option>
-                        <option value="ultimaSettimana">Ultima Settimana</option>
-                        <option value="meseCorrente">Mese Corrente</option>
-                    </select>
-                </div>
-                <div class="col-md-4 d-grid">
-                    <button type="submit" class="btn btn-success fw-bold">📄 GENERA REPORT</button>
-                </div>
-
-                <div class="col-12 mt-3">
-                    <label class="form-label fw-bold d-block">Seleziona parametri opzionali:</label>
-                    <div class="d-flex flex-wrap gap-4 bg-black bg-opacity-25 p-3 rounded border border-secondary">
-                        <div class="form-check">
-                    
-                        </div>
-                        @foreach (var p in Model.ParametriExtra)
-                        {
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="ParametriSelezionatiIds" value="@p.Id" id="p-@p.Id"
-                                @(Model.ParametriSelezionatiIds.Contains(p.Id) ? "checked" : "")>
-                                <label class="form-check-label" for="p-@p.Id">@p.Nome</label>
-                            </div>
-                        }
-                    </div>
-                </div>
-            </form>
-        </div>
+    
+    <!-- Pulsanti di navigazione e stampa (Nascosti durante la stampa) -->
+    <div class="d-flex justify-content-between align-items-center mb-4 no-print border-bottom border-secondary pb-3">
+        <a href="/Analisi" class="btn btn-outline-light rounded-pill px-4 shadow-sm">
+            <i class="bi bi-arrow-left me-1"></i> Torna ad Analisi
+        </a>
+        <button onclick="window.print()" class="btn btn-onus rounded-pill fw-bold shadow-lg px-4 fs-5">
+            <i class="bi bi-printer-fill me-1"></i> STAMPA REPORT
+        </button>
     </div>
 
-    @if (Model.MostraAnteprima)
-    {
-        <div class="text-end mb-3">
-            <button class="btn btn-primary px-5 fw-bold" onclick="scaricaPDF()">⬇️ SCARICA PDF</button>
-        </div>
-
-        <div id="foglioPDF" class="bg-white text-dark p-5 shadow-lg mx-auto" style="width: 210mm; min-height: 297mm; font-family: Arial, sans-serif;">
+    <!-- FOGLIO DEL REPORT -->
+    <div class="card report-card text-white mb-5">
+        <div class="card-body p-4 p-md-5">
             
-            <div class="d-flex justify-content-between align-items-end border-bottom border-dark pb-3 mb-4">
-                <div>
-                    <h5 class="text-muted text-uppercase mb-1" style="letter-spacing: 2px;">Overall status</h5>
-                    <h1 class="fw-bold m-0" style="color: #2c3e50;">ONUS report</h1>
-                </div>
-                <div class="text-end">
-                    <p class="text-muted small mb-1">Export: @DateTime.Now.ToString("dd.MM.yyyy")</p>
-                    <h4 class="fw-bold text-danger m-0">@Model.NomeAtleta</h4>
-                </div>
-            </div>
-
-            <div class="row mb-5 text-center bg-light py-2 rounded g-0">
-                <div class="col-4 border-end"> <small class="text-muted d-block">FILTER</small> <strong>@Model.FiltroTesto</strong> </div>
-                <div class="col-4 border-end"> <small class="text-muted d-block">FROM</small> <strong>@Model.DataInizio</strong> </div>
-                <div class="col-4"> <small class="text-muted d-block">TO</small> <strong>@Model.DataFine</strong> </div>
-            </div>
-
-            <div class="row mb-5 text-center d-flex justify-content-center g-0 border-top border-bottom py-4">
-                <div class="col p-2">
-                    <h6 class="text-muted mb-2">RPE</h6>
-                    <h2 class="fw-bold mb-1">@Model.RpeCorrente</h2>
-                    <small class="@(Model.RpeVariazione >= 0 ? "text-danger" : "text-success") fw-bold">
-                        @(Model.RpeVariazione >= 0 ? "↑" : "↓") @Math.Abs(Model.RpeVariazione)
-                    </small>
-                </div>
-
-                @if (Model.IncludiLoad)
-                {
-                    <div class="col p-2 border-start">
-                        <h6 class="text-muted mb-2">LOAD</h6>
-                        <h2 class="fw-bold mb-1">@Model.LoadCorrente</h2>
-                        <small class="@(Model.LoadVariazionePercentuale >= 0 ? "text-danger" : "text-success") fw-bold">
-                            @(Model.LoadVariazionePercentuale >= 0 ? "↑" : "↓") @Math.Abs(Math.Round(Model.LoadVariazionePercentuale, 0))%
-                        </small>
+            <!-- HEADER REPORT -->
+            <div class="row align-items-center border-bottom border-secondary pb-4 mb-4">
+                <div class="col-md-6 d-flex align-items-center mb-3 mb-md-0">
+                    <img src="~/Img/logo-onus.jpeg" alt="ONUS Logo" width="70" height="70" class="rounded-circle me-3 border border-secondary shadow-sm">
+                    <div>
+                        <h2 class="text-gradient-onus fw-bold tracking-wide m-0">REPORT PRESTAZIONE</h2>
+                        <p class="text-white-50 m-0 small">Generato il: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</p>
                     </div>
-                }
-
-                @foreach (var pId in Model.ParametriSelezionatiIds)
-                {
-                    var p = Model.ParametriExtra.FirstOrDefault(x => x.Id == pId);
-                    if (p != null)
-                    {
-                        <div class="col p-2 border-start">
-                            <h6 class="text-muted mb-2">@p.Nome.ToUpper()</h6>
-                            <h2 class="fw-bold mb-1">@Model.MedieDinamiche[pId]</h2>
-                            <small class="@(Model.VariazioniDinamiche[pId] >= 0 ? "text-success" : "text-danger") fw-bold">
-                                @(Model.VariazioniDinamiche[pId] >= 0 ? "↑" : "↓") @Math.Abs(Model.VariazioniDinamiche[pId])
-                            </small>
-                        </div>
-                    }
-                }
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <h3 class="text-white fw-bold m-0 text-uppercase">@Model.NomeAtletaSelezionato</h3>
+                    <div class="text-info mt-1">
+                        <i class="bi bi-rulers"></i> @Model.AltezzaAtleta cm <span class="mx-2 text-secondary">|</span>
+                        <i class="bi bi-speedometer2"></i> @Model.PesoAtleta kg
+                    </div>
+                </div>
             </div>
 
-            @if (Model.IncludiLoad)
-            {
-                <div class="mt-4">
-                    <h5 class="text-uppercase text-muted border-bottom pb-2 mb-4">Trend - Player Load</h5>
-                    <div style="height: 300px;"><canvas id="graficoReport"></canvas></div>
+            <!-- SINTESI DATI (KPI) -->
+            <div class="row g-4 mb-5">
+                <div class="col-md-4">
+                    <div class="p-4 bg-black border border-secondary rounded-3 text-center h-100 shadow-sm" style="border-bottom: 4px solid var(--onus-blue) !important;">
+                        <h6 class="text-white-50 text-uppercase small ls-1 mb-2">Carico Settimanale</h6>
+                        <h1 class="text-white fw-bold m-0 display-4">@Model.CaricoSettimanale</h1>
+                    </div>
                 </div>
-            }
-        </div>
-    }
-</div>
+                <div class="col-md-4">
+                    <div class="p-4 bg-black border border-secondary rounded-3 text-center h-100 shadow-sm" style="border-bottom: 4px solid var(--onus-green) !important;">
+                        <h6 class="text-white-50 text-uppercase small ls-1 mb-2">ACWR Attuale</h6>
+                        <h1 class="text-gradient-onus fw-bold m-0 display-4">@(Model.DatiACWR != null && Model.DatiACWR.Any() ? Model.DatiACWR.LastOrDefault().ToString("0.00") : "N/D")</h1>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-4 bg-black border border-secondary rounded-3 text-center h-100 shadow-sm" style="border-bottom: 4px solid #f1c40f !important;">
+                        <h6 class="text-white-50 text-uppercase small ls-1 mb-2">Sessioni Registrate</h6>
+                        <h1 class="text-white fw-bold m-0 display-4">@(Model.SessioniAtleta?.Count ?? 0)</h1>
+                    </div>
+                </div>
+            </div>
 
-@section Scripts {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    @if (Model.MostraAnteprima && Model.IncludiLoad)
-    {
-        <script>
-            document.addEventListener("DOMContentLoaded", function() {
-            const ctx = document.getElementById('graficoReport').getContext('2d');
-            new Chart(ctx, {
-            type: 'bar',
-            data: {
-            labels: @Html.Raw(Json.Serialize(Model.EtichetteDate)),
-            datasets: [{ label: 'Load', data: @Html.Raw(Json.Serialize(Model.DatiLoad)), backgroundColor: '#e74c3c' }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-            });
-            });
-        </script>
-    }
-    <script>
-        function scaricaPDF() {
-        const element = document.getElementById('foglioPDF');
-        html2pdf().set({
-        margin: 2,
-        filename: 'ONUS_Report_@(DateTime.Now.ToString("yyyyMMdd")).pdf',
-        html2canvas: {
-        scale: 2,
-        //windowWidth: element.scrollWidth // Questo è il vero trucco magico per non far tagliare i testi a destra!
-        },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        }).from(element).save();
-        }
-    </script>
-}
+            <!-- TABELLA DETTAGLIO SESSIONI -->
+            <h5 class="text-gradient-onus fw-bold mb-3 tracking-wide">DETTAGLIO SESSIONI</h5>
+            <div class="table-responsive">
+                <table class="table table-dark table-striped table-bordered border-secondary align-middle m-0">
+                    <thead>
+                        <tr class="text-uppercase text-white-50 small ls-1" style="border-bottom: 2px solid var(--onus-blue);">
+                            <th class="py-3 ps-3">Data</th>
+                            <th class="text-center">Durata (Min)</th>
+                            <th class="text-center">RPE (0-10)</th>
+                            <th class="text-center">Player Load</th>
+                            <th class="text-center">Sonno</th>
+                            <th class="text-center">Dolore</th>
+                            <th style="width: 25%;">Note Staff/Atleta</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if(Model.SessioniAtleta != null && Model.SessioniAtleta.Any())
+                        {
+                            @foreach (var s in Model.SessioniAtleta)
+                            {
+                                // Recuperiamo i valori specifici usando la stessa logica di Analisi.cshtml
+                                var valRpe = s.Valori.FirstOrDefault(v => v.Parametro.IsCalcoloCarico)?.Valore ?? 0;
+                                var valSonno = s.Valori.FirstOrDefault(v => v.Parametro.Nome.Contains("Sonno", StringComparison.OrdinalIgnoreCase))?.Valore ?? 0;
+                                var valDolore = s.Valori.FirstOrDefault(v => v.Parametro.Nome.Contains("Dolore", StringComparison.OrdinalIgnoreCase) || v.Parametro.Nome.Contains("Indolenzimento", StringComparison.OrdinalIgnoreCase))?.Valore ?? 0;
+
+                                <tr>
+                                    <td class="ps-3 fw-bold text-white py-3">@s.Data.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td class="text-center text-white-50">@s.DurataTotaleMinuti'</td>
+                                    <td class="text-center"><span class="badge bg-black border fw-bold px-3 py-2 rounded-pill" style="border-color: var(--onus-green); color: var(--onus-green);">@valRpe</span></td>
+                                    <td class="text-center fw-bold fs-5 text-info">@s.CaricoCalcolato</td>
+                                    <td class="text-center text-white-50">@valSonno</td>
+                                    <td class="text-center text-white-50">@valDolore</td>
+                                    <td class="small text-white-50 fst-italic">@(string.IsNullOrEmpty(s.Note) ? "-" : s.Note)</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center text-white-50 py-4 fst-italic">Nessun dato registrato nel periodo selezionato.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- FOOTER DEL DOCUMENTO -->
+            <div class="mt-5 pt-4 border-top border-secondary text-center text-white-50 small">
+                <p class="m-0 fw-bold">ONUS Athlete Monitoring System &copy; @DateTime.Now.Year</p>
+                <p class="m-0 mt-1">Documento strettamente confidenziale. Riservato all'uso esclusivo dello staff tecnico e medico.</p>
+            </div>
+
+        </div>
+    </div>
+</div>
