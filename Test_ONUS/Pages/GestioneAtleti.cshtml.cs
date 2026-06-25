@@ -127,5 +127,102 @@ namespace Test_ONUS.Pages
 
             return RedirectToPage();
         }
+
+        // ==============================================================
+        // METODO PER SALVARE O AGGIORNARE UN ATLETA
+        // ==============================================================
+        public async Task<IActionResult> OnPostSaveAsync(
+            int Id, string Nome, string Cognome, int Altezza, double Peso, string Password,
+            bool IsAttivo, bool IsInfortunato, bool IsInRiabilitazione, string DescrizioneInfortunio,
+            IFormFile UploadImmagine, string FotoUrlCorrente)
+        {
+            // Controllo permessi
+            if (HttpContext.Session.GetString("Ruolo") != "Staff") return RedirectToPage("/Index");
+            var squadraId = HttpContext.Session.GetInt32("SquadraId");
+            if (squadraId == null) return RedirectToPage("/Login");
+
+            Atleta atleta;
+
+            // 1. Cerca l'atleta esistente o creane uno nuovo
+            if (Id > 0)
+            {
+                atleta = await _context.Atleti.FindAsync(Id);
+                if (atleta == null) return NotFound();
+            }
+            else
+            {
+                atleta = new Atleta();
+                atleta.SquadraId = squadraId.Value;
+                _context.Atleti.Add(atleta);
+            }
+
+            // 2. Aggiorna tutti i campi base
+            atleta.Nome = Nome;
+            atleta.Cognome = Cognome;
+            atleta.Altezza = Altezza;
+            atleta.Peso = Peso;
+            atleta.IsAttivo = IsAttivo;
+            atleta.IsInfortunato = IsInfortunato;
+            atleta.IsInRiabilitazione = IsInRiabilitazione;
+            atleta.DescrizioneInfortunio = DescrizioneInfortunio;
+
+            // 3. Cripta la password (solo se è nuova e non è già criptata con BCrypt)
+            if (!string.IsNullOrEmpty(Password) && !Password.StartsWith("$2"))
+            {
+                atleta.Password = BCrypt.Net.BCrypt.HashPassword(Password);
+            }
+
+            // 4. Gestione Immagine Profilo (Caricamento)
+            if (UploadImmagine != null && UploadImmagine.Length > 0)
+            {
+                var uploadsFolder = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "wwwroot", "Img");
+                System.IO.Directory.CreateDirectory(uploadsFolder); // Crea la cartella se non esiste
+
+                var uniqueFileName = Guid.NewGuid().ToString() + "_" + UploadImmagine.FileName;
+                var filePath = System.IO.Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var fileStream = new System.IO.FileStream(filePath, System.IO.FileMode.Create))
+                {
+                    await UploadImmagine.CopyToAsync(fileStream);
+                }
+                atleta.FotoUrl = "/Img/" + uniqueFileName;
+            }
+            else if (Id == 0)
+            {
+                // Se è un atleta nuovo e non carica foto, usa quella di default
+                atleta.FotoUrl = "/Img/default.png";
+            }
+            else
+            {
+                // Se è una modifica e non cambia foto, mantieni la precedente
+                atleta.FotoUrl = FotoUrlCorrente ?? "/Img/default.png";
+            }
+
+            // 5. Salva tutto nel database
+            await _context.SaveChangesAsync();
+
+            return RedirectToPage();
+        }
+
+        // ==============================================================
+        // METODO PER AGGIORNARE IL NOME DELLA SQUADRA
+        // ==============================================================
+        public async Task<IActionResult> OnPostAggiornaSquadraAsync(string NomeSquadra)
+        {
+            var squadraId = HttpContext.Session.GetInt32("SquadraId");
+            if (squadraId == null) return RedirectToPage("/Login");
+
+            var squadra = await _context.Squadre.FindAsync(squadraId);
+
+            if (squadra != null && !string.IsNullOrWhiteSpace(NomeSquadra))
+            {
+                squadra.Nome = NomeSquadra;
+                await _context.SaveChangesAsync();
+
+                // Aggiorna anche il nome in sessione per navbar/dashboard
+                HttpContext.Session.SetString("NomeSquadra", NomeSquadra);
+            }
+            return RedirectToPage();
+        }
     }
 }

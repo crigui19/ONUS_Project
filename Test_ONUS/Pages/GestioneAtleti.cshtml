@@ -92,15 +92,23 @@
                             <p class="text-muted small">Seleziona i giocatori a cui mandare il promemoria:</p>
 
                             <div class="list-group mb-3">
-                                @foreach (var atleta in Model.Atleti)
+                                @if (Model.Atleti != null && Model.Atleti.Any())
                                 {
-                                    <label class="list-group-item d-flex gap-2 align-items-center">
-                                        <input class="form-check-input flex-shrink-0" type="checkbox" name="AtletiSelezionati" value="@atleta.Id">
-                                        <span>
-                                            @atleta.Nome @atleta.Cognome
-                                        </span>
-                                    </label>
+                                    @foreach (var atleta in Model.Atleti)
+                                    {
+                                            <label class="list-group-item d-flex gap-2 align-items-center">
+                                                <input class="form-check-input flex-shrink-0" type="checkbox" name="AtletiSelezionati" value="@atleta.Id">
+                                                <span>
+                                                    @atleta.Nome @atleta.Cognome
+                                                </span>
+                                            </label>
+                                        }
+                                    }
                                 }
+else
+{
+    <p>Nessun atleta trovato per questa squadra.</p>
+}
                             </div>
 
                             <div>
