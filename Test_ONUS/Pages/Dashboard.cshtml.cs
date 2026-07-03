@@ -54,7 +54,7 @@ namespace Test_ONUS.Pages
             var sessione = new SessioneAllenamento
             {
                 AtletaId = AtletaId,
-                Data = DateTime.Now,
+                Data = DateTime.UtcNow,
                 DurataTotaleMinuti = 90,
                 TempoEffettivoMinuti = 80,
                 Note = Note,
