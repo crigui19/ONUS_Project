@@ -51,7 +51,7 @@ namespace Test_ONUS.Pages
 
             if (atleta != null)
             {
-                ImpostaSessioneECookie(atleta.Id, "Atleta", atleta.Nome, atleta.Cognome, (int)atleta.SquadraId);
+                ImpostaSessioneECookie(atleta.Id, "Atleta", atleta.Nome, atleta.Cognome, atleta.SquadraId);
                 return RedirectToPage("/Analisi");
             }
 
