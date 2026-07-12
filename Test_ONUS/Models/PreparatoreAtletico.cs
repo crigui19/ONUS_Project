@@ -15,6 +15,10 @@ namespace Test_ONUS.Models
         [Required]
         [EmailAddress]
         public string Email { get; set; }
+
+        // Nuovi campi per il recupero password
+        public string? ResetToken { get; set; }
+        public DateTime? ResetTokenScadenza { get; set; }
         // Foreign Key per la Squadra
         public int SquadraId { get; set; }
 

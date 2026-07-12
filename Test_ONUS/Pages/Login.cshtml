@@ -25,6 +25,11 @@
                 <label asp-for="Password" class="text-white-50">Password</label>
             </div>
 
+            <!-- Nuovo link per recupero password -->
+            <div class="text-end mb-3">
+                <a href="/RecuperoPassword" class="text-white-50 small text-decoration-none" style="transition: color 0.2s;" onmouseover="this.style.color='var(--onus-blue)'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">Forgot Password?</a>
+            </div>
+
             @if (!string.IsNullOrEmpty(Model.ErrorMsg))
             {
                 <div class="alert bg-danger bg-opacity-25 border border-danger text-white py-2 mb-3 shadow-sm">
