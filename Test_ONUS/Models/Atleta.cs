@@ -1,49 +1,29 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Test_ONUS.Models
 {
     public class Atleta
     {
-        [Key]
         public int Id { get; set; }
+
+        [Required]
         public string Nome { get; set; } = string.Empty;
+
+        [Required]
         public string Cognome { get; set; } = string.Empty;
 
-        // Queste erano quelle che davano errore:
-        public string FotoUrl { get; set; } = "/Img/default.png";
-        public bool IsAttivo { get; set; } = true;
+        // QUESTA E' LA RIGA CHE MANCA O CHE NON E' STATA SALVATA
+        public string Password { get; set; } = string.Empty;
 
-        public string Password { get; set; } = "1234";
-        public double Peso { get; set; }  // In kg
-        public int Altezza { get; set; }   // In cm
-
-        // Nuovi campi per la gestione infortuni
-        public bool IsInfortunato { get; set; } = false; // Tasto Rosso
-        public bool IsInRiabilitazione { get; set; } = false; // Tasto Giallo
-        public string? DescrizioneInfortunio { get; set; } // Testo per il pop-up
-
-        // Relazione con la Squadra (necessaria per la gestione rosa)
-        public int? SquadraId { get; set; }
-        [ForeignKey("SquadraId")]
+        public int SquadraId { get; set; }
         public Squadra? Squadra { get; set; }
 
-        // ========================================================
-        // QUESTA È LA RIGA MANCANTE CHE RISOLVE L'ERRORE!
-        // Collega l'atleta a tutte le sessioni che ha registrato
-        // ========================================================
-        public List<SessioneAllenamento> SessioniAllenamento { get; set; } = new List<SessioneAllenamento>();
-
-
-        [NotMapped]
-        public double BMI
-        {
-            get
-            {
-                if (Altezza <= 0) return 0;
-                double altezzaMetri = Altezza / 100.0;
-                return Math.Round(Peso / (altezzaMetri * altezzaMetri), 1);
-            }
-        }
+        public int Altezza { get; set; }
+        public double Peso { get; set; }
+        public bool IsAttivo { get; set; } = true;
+        public bool IsInfortunato { get; set; }
+        public bool IsInRiabilitazione { get; set; }
+        public string? DescrizioneInfortunio { get; set; }
+        public string FotoUrl { get; set; } = "/Img/default.png";
     }
 }

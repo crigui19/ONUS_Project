@@ -10,11 +10,10 @@
     <title>@ViewData["Title"] - ONUS</title>
 
     <link rel="manifest" href="~/manifest.json">
-    <meta name="theme-color" content="#00a0ff"> <!-- Aggiornato all'azzurro -->
+    <meta name="theme-color" content="#00a0ff">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="ONUS">
-    <!-- Puoi sostituire questa icona con il tuo nuovo logo quadrato in futuro -->
     <link rel="apple-touch-icon" href="~/img/icon-192.png">
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
@@ -23,17 +22,14 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 </head>
 <body class="bg-dark text-white">
-    <!-- Loader Aggiornato -->
     <div id="loading-overlay">
         <div class="loader"></div>
         <div class="loading-text text-gradient-onus fw-bold fs-3">ONUS</div>
     </div>
 
     <header>
-        <!-- Navbar con border verde/azzurro -->
         <nav class="navbar navbar-expand-sm navbar-dark bg-black mb-3 shadow" style="border-bottom: 2px solid #00a0ff;">
             <div class="container">
-                <!-- IL NUOVO LOGO -->
                 <a class="navbar-brand d-flex align-items-center" asp-area="" asp-page="/Index">
                     <img src="~/Img/logo-onus.jpeg" alt="ONUS" width="40" height="40" class="rounded-circle me-2 border border-secondary shadow-sm">
                     <span class="text-gradient-onus fw-bold fs-4 tracking-wider" style="letter-spacing: 2px;">ONUS</span>
@@ -55,7 +51,6 @@
                     </ul>
 
                     <ul class="navbar-nav">
-                        <!-- PULSANTE INSTALLAZIONE PWA (Nuovo colore) -->
                         <li class="nav-item d-flex align-items-center me-3 d-none" id="installContainer">
                             <button id="btnInstall" class="btn btn-outline-onus btn-sm rounded-pill px-3 shadow-sm">
                                 <i class="bi bi-download me-1"></i> Install App
@@ -110,11 +105,11 @@
 
                     <div class="row g-2 mb-3">
                         <div class="col-6">
-                            <label class="form-label text-muted small text-uppercase">@Localizer["Name"]</label>
+                            <label class="form-label text-muted small text-uppercase">@Localizer["First Name"]</label>
                             <input type="text" name="Nome" class="form-control bg-black text-white border-secondary" value="@Context.Session.GetString("Nome")" required>
                         </div>
                         <div class="col-6">
-                            <label class="form-label text-muted small text-uppercase">@Localizer["Surname"]</label>
+                            <label class="form-label text-muted small text-uppercase">@Localizer["Last Name"]</label>
                             <input type="text" name="Cognome" class="form-control bg-black text-white border-secondary" value="@Context.Session.GetString("Cognome")" required>
                         </div>
                     </div>
@@ -174,7 +169,6 @@
         </div>
     }
 
-    <!-- Modale Istruzioni Installazione iOS -->
     <div class="modal fade" id="iosInstallModal" tabindex="-1" aria-labelledby="iosInstallModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content bg-dark text-white border-secondary shadow-lg">
@@ -197,7 +191,7 @@
                     </div>
                 </div>
                 <div class="modal-footer border-secondary">
-                    <button type="button" class="btn btn-secondary w-100 fw-bold" data-bs-dismiss="modal">I got it</button>
+                    <button type="button" class="btn btn-secondary w-100 fw-bold" data-bs-dismiss="modal">Got it</button>
                 </div>
             </div>
         </div>
@@ -214,75 +208,63 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     <script>
-        // 1. Nascondi il loader quando la pagina ha finito di caricare
         window.addEventListener('load', function () {
         document.getElementById('loading-overlay').classList.add('loaded');
         });
 
-        // 2. Registrazione del Service Worker per la PWA
         if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
         navigator.serviceWorker.register('/service-worker.js')
-        .then(reg => console.log('PWA: Service Worker Registrato'))
-        .catch(err => console.log('PWA: Errore SW', err));
+        .then(reg => console.log('PWA: Service Worker Registered'))
+        .catch(err => console.log('PWA: SW Error', err));
         });
         }
 
-        // 3. Funzione per mostrare/nascondere il box del cambio password
         function toggleCambioPassword() {
         var box = document.getElementById('boxNuovaPass');
         box.style.display = (box.style.display === 'none') ? 'block' : 'none';
         }
 
-        // 4. LOGICA DI INSTALLAZIONE PWA (AGGIORNATA PER IOS E ANDROID)
         let deferredPrompt = null;
         const installContainer = document.getElementById('installContainer');
         const btnInstall = document.getElementById('btnInstall');
 
-        // Funzione per capire se l'utente usa un dispositivo Apple (iOS)
         const isIos = () => {
         const userAgent = window.navigator.userAgent.toLowerCase();
         return /iphone|ipad|ipod/.test(userAgent);
         };
 
-        // Funzione per capire se l'app è già installata (Standalone mode)
         const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone) || window.matchMedia('(display-mode: standalone)').matches;
 
-        // Se è un iOS e l'app NON è installata, forziamo la comparsa del bottone
         if (isIos() && !isInStandaloneMode()) {
         installContainer.classList.remove('d-none');
         }
 
-        // Cattura l'evento standard (per Android e Desktop)
         window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        installContainer.classList.remove('d-none'); // Mostra il bottone
+        installContainer.classList.remove('d-none');
         });
 
-        // Cosa succede quando si clicca il bottone
         btnInstall.addEventListener('click', async () => {
         if (deferredPrompt !== null) {
-        // Procedura standard PC/Android: mostra il prompt del browser
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
         if (outcome === 'accepted') {
-        console.log('PWA installata tramite prompt');
+        console.log('PWA installed via prompt');
         }
         deferredPrompt = null;
         installContainer.classList.add('d-none');
         } else if (isIos() && !isInStandaloneMode()) {
-        // Procedura iOS: Apri il nostro modale con le istruzioni manuali
         var iosModal = new bootstrap.Modal(document.getElementById('iosInstallModal'));
         iosModal.show();
         }
         });
 
-        // Nascondi il bottone se il sistema ci avvisa che l'installazione è andata a buon fine
         window.addEventListener('appinstalled', () => {
         installContainer.classList.add('d-none');
         deferredPrompt = null;
-        console.log('Installazione completata!');
+        console.log('Installation complete!');
         });
     </script>
 

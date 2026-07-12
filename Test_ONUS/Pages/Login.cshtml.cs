@@ -1,81 +1,86 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.DataProtection;
 using Test_ONUS.Data;
-using Microsoft.AspNetCore.Http; // Importante per la Sessione
+using System.Linq;
+using System;
+using Microsoft.AspNetCore.Http;
 
 namespace Test_ONUS.Pages
 {
     public class LoginModel : PageModel
     {
         private readonly ApplicationDbContext _context;
+        private readonly IDataProtector _protector;
 
-        public LoginModel(ApplicationDbContext context)
+        public LoginModel(ApplicationDbContext context, IDataProtectionProvider dataProtectionProvider)
         {
             _context = context;
+            _protector = dataProtectionProvider.CreateProtector("Onus.Auth.v1");
         }
 
-        public string ErrorMsg { get; set; } = "";
+        [BindProperty]
+        public string Username { get; set; } = string.Empty;
+
+        [BindProperty]
+        public string Password { get; set; } = string.Empty;
+
+        public string ErrorMsg { get; set; } = string.Empty;
 
         public void OnGet()
         {
             HttpContext.Session.Clear();
+            Response.Cookies.Delete("OnusAuth");
         }
 
-        public async Task<IActionResult> OnPostAsync(string username, string password)
+        public IActionResult OnPost()
         {
-            // ==========================================
-            // 1. Cerca prima nello Staff (Preparatori)
-            // ==========================================
-            // Estrai l'utente DAL SOLO NOME
-            var coach = await _context.PreparatoriAtletici
-                .Include(p => p.Squadra)
-                .FirstOrDefaultAsync(p => p.Nome == username);
+            // 1. Cerca tra i Preparatori
+            var preparatore = _context.PreparatoriAtletici
+                .FirstOrDefault(p => p.Email == Username || (p.Nome.ToLower() + p.Cognome.ToLower()) == Username.ToLower());
 
-            // Se l'utente esiste, verifica se la password digitata coincide con l'hash
-            if (coach != null && BCrypt.Net.BCrypt.Verify(password, coach.Password))
+            if (preparatore != null && BCrypt.Net.BCrypt.Verify(Password, preparatore.Password))
             {
-                HttpContext.Session.SetInt32("UserId", coach.Id);
-                HttpContext.Session.SetString("Ruolo", "Staff");
-                HttpContext.Session.SetString("NomeCompleto", $"{coach.Nome} {coach.Cognome}");
-
-                // Salviamo ID squadra
-                HttpContext.Session.SetInt32("SquadraId", coach.SquadraId);
-                HttpContext.Session.SetString("NomeSquadra", coach.Squadra?.Nome ?? "Nessuna");
-
+                ImpostaSessioneECookie(preparatore.Id, "Staff", preparatore.Nome, preparatore.Cognome, preparatore.SquadraId);
                 return RedirectToPage("/Dashboard");
             }
 
-            // ==========================================
-            // 2. Se non è staff, cerca negli Atleti
-            // ==========================================
-            // Estrai l'atleta DAL SOLO NOME
-            var atleta = await _context.Atleti
-                .Include(a => a.Squadra)
-                .FirstOrDefaultAsync(a => a.Nome == username);
+            // 2. Cerca tra gli Atleti
+            var atleta = _context.Atleti
+                .FirstOrDefault(a => (a.Nome.ToLower() + a.Cognome.ToLower()) == Username.ToLower() && a.Password == Password);
 
-            // Se l'atleta esiste, verifica la password con BCrypt
-            if (atleta != null && BCrypt.Net.BCrypt.Verify(password, atleta.Password))
+            if (atleta != null)
             {
-                if (!atleta.IsAttivo)
-                {
-                    ErrorMsg = "Utente disabilitato.";
-                    return Page();
-                }
-
-                HttpContext.Session.SetInt32("UserId", atleta.Id);
-                HttpContext.Session.SetString("Ruolo", "Atleta");
-                HttpContext.Session.SetString("NomeCompleto", $"{atleta.Nome} {atleta.Cognome}");
-
-                if (atleta.SquadraId != null)
-                    HttpContext.Session.SetInt32("SquadraId", (int)atleta.SquadraId);
-
-                return RedirectToPage("/Dashboard");
+                ImpostaSessioneECookie(atleta.Id, "Atleta", atleta.Nome, atleta.Cognome, (int)atleta.SquadraId);
+                return RedirectToPage("/Analisi");
             }
 
-            // Se arriva qui, nome utente inesistente o password errata
-            ErrorMsg = "Nome o Password non validi.";
+            ErrorMsg = "Invalid Username or Password.";
             return Page();
+        }
+
+        private void ImpostaSessioneECookie(int id, string role, string nome, string cognome, int squadraId)
+        {
+            // Imposta Sessione ("Ruolo" resta in italiano perché usato nel Layout per i permessi)
+            HttpContext.Session.SetInt32("UserId", id);
+            HttpContext.Session.SetString("Ruolo", role);
+            HttpContext.Session.SetString("Nome", nome);
+            HttpContext.Session.SetString("Cognome", cognome);
+            HttpContext.Session.SetString("NomeCompleto", $"{nome} {cognome}");
+            HttpContext.Session.SetInt32("SquadraId", squadraId);
+
+            // Crea Cookie Persistente e Sicuro per la funzionalità "Remember Me"
+            var encryptedId = _protector.Protect(id.ToString());
+
+            var cookieOptions = new CookieOptions
+            {
+                Expires = DateTime.UtcNow.AddDays(60), // 60 giorni di validità
+                HttpOnly = true,
+                IsEssential = true,
+                Secure = true
+            };
+
+            Response.Cookies.Append("OnusAuth", encryptedId, cookieOptions);
         }
     }
 }

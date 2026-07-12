@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Test_ONUS.Data;
 
@@ -124,6 +125,59 @@ app.UseCors("AllowNextJs"); // ATTIVA IL CORS PER NEXT.JS
 
 app.UseAuthorization();
 app.UseSession();
+app.Use(async (context, next) =>
+{
+    // Se la sessione è vuota (il server si è riavviato) ma il cookie "Remember Me" esiste
+    if (context.Session.GetInt32("UserId") == null && context.Request.Cookies.ContainsKey("OnusAuth"))
+    {
+        try
+        {
+            var provider = context.RequestServices.GetRequiredService<Microsoft.AspNetCore.DataProtection.IDataProtectionProvider>();
+            var protector = provider.CreateProtector("Onus.Auth.v1");
+
+            // Decripta l'ID utente in modo sicuro
+            var decryptedUserId = protector.Unprotect(context.Request.Cookies["OnusAuth"]!);
+
+            if (int.TryParse(decryptedUserId, out int userId))
+            {
+                var db = context.RequestServices.GetRequiredService<Test_ONUS.Data.ApplicationDbContext>();
+
+                // Cerca prima tra gli atleti
+                var atleta = db.Atleti.Find(userId);
+                if (atleta != null)
+                {
+                    context.Session.SetInt32("UserId", atleta.Id);
+                    context.Session.SetString("Ruolo", "Atleta");
+                    context.Session.SetString("Nome", atleta.Nome);
+                    context.Session.SetString("Cognome", atleta.Cognome);
+                    context.Session.SetString("NomeCompleto", $"{atleta.Nome} {atleta.Cognome}");
+                    context.Session.SetInt32("SquadraId", (int)atleta.SquadraId);
+                }
+                else
+                {
+                    // Se non è un atleta, cerca tra lo staff
+                    var staff = db.PreparatoriAtletici.Find(userId);
+                    if (staff != null)
+                    {
+                        context.Session.SetInt32("UserId", staff.Id);
+                        context.Session.SetString("Ruolo", "Staff");
+                        context.Session.SetString("Nome", staff.Nome);
+                        context.Session.SetString("Cognome", staff.Cognome);
+                        context.Session.SetString("NomeCompleto", $"{staff.Nome} {staff.Cognome}");
+                        context.Session.SetInt32("SquadraId", staff.SquadraId);
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // Se il cookie è scaduto o manomesso, ignoriamo (verrà reindirizzato al login normale)
+        }
+    }
+    await next();
+});
+
+app.UseRouting();
 
 app.MapControllers(); // MAPPA LE TUE API C#
 app.MapRazorPages();  // MAPPA LE TUE PAGINE CLASSICHE
