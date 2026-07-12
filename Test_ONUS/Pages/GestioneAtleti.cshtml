@@ -1,11 +1,10 @@
 ﻿@page
 @model Test_ONUS.Pages.GestioneAtletiModel
 @{
-    ViewData["Title"] = "Gestione Squadra";
+    ViewData["Title"] = "Team Management";
 }
 
 <style>
-    /* Stile per l'area di upload Drag & Drop aggiornato al nuovo brand */
     .upload-area {
         border: 2px dashed #6c757d;
         border-radius: 10px;
@@ -18,7 +17,7 @@
     }
 
         .upload-area:hover, .upload-area.dragover {
-            border-color: var(--onus-blue); /* Azzurro Accento */
+            border-color: var(--onus-blue);
             background-color: #222;
             box-shadow: 0 0 15px rgba(0, 160, 255, 0.2);
         }
@@ -53,16 +52,16 @@
 <div class="container mt-4">
     <div class="card bg-dark text-white mb-4 shadow" style="border: 1px solid rgba(0, 160, 255, 0.3);">
         <div class="card-body">
-            <h4 class="card-title text-gradient-onus fw-bold tracking-wide mb-3">@Localizer["GESTIONE SQUADRA"]</h4>
+            <h4 class="card-title text-gradient-onus fw-bold tracking-wide mb-3">TEAM MANAGEMENT</h4>
             <form method="post" asp-page-handler="AggiornaSquadra" class="row g-3 align-items-center mt-2">
                 <div class="col-auto">
-                    <label class="col-form-label text-white-50">@Localizer["Nome Squadra"]:</label>
+                    <label class="col-form-label text-white-50">Team Name:</label>
                 </div>
                 <div class="col-auto">
                     <input type="text" class="form-control bg-black text-white border-secondary shadow-sm" asp-for="NomeSquadra" />
                 </div>
                 <div class="col-auto">
-                    <button type="submit" class="btn btn-outline-onus rounded-pill px-4">@Localizer["Aggiorna Nome"]</button>
+                    <button type="submit" class="btn btn-outline-onus rounded-pill px-4">Update Name</button>
                 </div>
             </form>
         </div>
@@ -72,14 +71,14 @@
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary pb-3">
         <h3 class="text-white fw-bold text-uppercase tracking-wide border-start border-4 ps-3 mb-0" style="border-color: var(--onus-green) !important;">
-            Rosa Giocatori
+            Player Roster
         </h3>
         <div class="d-flex gap-3">
             <button type="button" class="btn btn-outline-onus rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#notificheModal">
-                <i class="bi bi-bell-fill me-1"></i> Promemoria
+                <i class="bi bi-bell-fill me-1"></i> Reminder
             </button>
             <button class="btn btn-onus fw-bold shadow-lg rounded-pill px-4" onclick="apriModaleAtleta(0, '', '', '', '', true)">
-                <i class="bi bi-person-plus-fill me-1"></i> NUOVO GIOCATORE
+                <i class="bi bi-person-plus-fill me-1"></i> NEW PLAYER
             </button>
         </div>
     </div>
@@ -89,11 +88,11 @@
             <div class="modal-content bg-dark text-white border-secondary shadow-lg">
                 <form method="post" asp-page-handler="InviaNotifiche">
                     <div class="modal-header border-secondary" style="border-bottom: 1px solid rgba(0, 160, 255, 0.3);">
-                        <h5 class="modal-title text-gradient-onus fw-bold" id="notificheModalLabel">Seleziona Atleti da Avvisare</h5>
+                        <h5 class="modal-title text-gradient-onus fw-bold" id="notificheModalLabel">Select Players to Notify</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <p class="text-white-50 small mb-4">Seleziona i giocatori a cui mandare il promemoria Push sui loro dispositivi:</p>
+                        <p class="text-white-50 small mb-4">Select the players to send the push reminder to on their devices:</p>
 
                         <div class="list-group mb-4 shadow-sm">
                             @if (Model.Atleti != null && Model.Atleti.Any())
@@ -110,18 +109,18 @@
                             }
                             else
                             {
-                                <p class="text-muted fst-italic p-3 bg-black rounded">Nessun atleta trovato per questa squadra.</p>
+                                <p class="text-muted fst-italic p-3 bg-black rounded">No athletes found for this team.</p>
                             }
                         </div>
 
                         <div>
-                            <label for="messaggioNotifica" class="form-label fw-bold text-white-50">Messaggio della notifica:</label>
-                            <textarea class="form-control bg-black text-white border-secondary shadow-sm" id="messaggioNotifica" name="MessaggioTesto" rows="2">Ciao! Ricordati di inserire i dati della sessione di oggi nell'app. Grazie!</textarea>
+                            <label for="messaggioNotifica" class="form-label fw-bold text-white-50">Notification message:</label>
+                            <textarea class="form-control bg-black text-white border-secondary shadow-sm" id="messaggioNotifica" name="MessaggioTesto" rows="2">Hello! Remember to enter today's session data in the app. Thanks!</textarea>
                         </div>
                     </div>
                     <div class="modal-footer border-secondary">
-                        <button type="button" class="btn btn-outline-light rounded-pill" data-bs-dismiss="modal">Annulla</button>
-                        <button type="submit" class="btn btn-onus rounded-pill px-4 fw-bold">Invia Notifica <i class="bi bi-send ms-1"></i></button>
+                        <button type="button" class="btn btn-outline-light rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-onus rounded-pill px-4 fw-bold">Send Notification <i class="bi bi-send ms-1"></i></button>
                     </div>
                 </form>
             </div>
@@ -134,10 +133,10 @@
                 <thead>
                     <tr class="text-uppercase text-white-50 small ls-1" style="border-bottom: 2px solid var(--onus-blue);">
                         <th class="py-3 ps-4">Avatar</th>
-                        <th>Nome & Cognome</th>
-                        <th>Credenziali App</th>
-                        <th class="text-center">Stato Fisico</th>
-                        <th class="text-end pe-4">Azioni</th>
+                        <th>Name & Surname</th>
+                        <th>App Credentials</th>
+                        <th class="text-center">Physical Status</th>
+                        <th class="text-end pe-4">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -163,28 +162,28 @@
                             <td class="text-center align-middle">
                                 @if (!atleta.IsAttivo)
                                 {
-                                    <span class="badge bg-secondary p-2 shadow-sm rounded-pill px-3">INATTIVO</span>
+                                    <span class="badge bg-secondary p-2 shadow-sm rounded-pill px-3">INACTIVE</span>
                                 }
                                 else if (atleta.IsInfortunato)
                                 {
-                                    <span class="badge p-2 shadow-sm fw-bold tracking-wide rounded-pill px-3" style="background-color: #ff4757; color: white; letter-spacing: 1px;">INFORTUNATO</span>
+                                    <span class="badge p-2 shadow-sm fw-bold tracking-wide rounded-pill px-3" style="background-color: #ff4757; color: white; letter-spacing: 1px;">INJURED</span>
                                 }
                                 else if (atleta.IsInRiabilitazione)
                                 {
-                                    <span class="badge text-dark p-2 shadow-sm fw-bold tracking-wide rounded-pill px-3" style="background-color: #ffa502; letter-spacing: 1px;">IN RIABILITAZIONE</span>
+                                    <span class="badge text-dark p-2 shadow-sm fw-bold tracking-wide rounded-pill px-3" style="background-color: #ffa502; letter-spacing: 1px;">IN REHAB</span>
                                 }
                                 else
                                 {
-                                    <span class="badge p-2 shadow-sm fw-bold tracking-wide rounded-pill px-3" style="background-color: var(--onus-green); color: black; letter-spacing: 1px;">DISPONIBILE</span>
+                                    <span class="badge p-2 shadow-sm fw-bold tracking-wide rounded-pill px-3" style="background-color: var(--onus-green); color: black; letter-spacing: 1px;">AVAILABLE</span>
                                 }
                             </td>
                             <td class="text-end pe-4">
                                 <button class="btn btn-sm btn-outline-onus rounded-pill me-2 px-3"
                                         onclick="apriModaleAtleta(@atleta.Id, '@atleta.Nome', '@atleta.Cognome', '', '@atleta.FotoUrl', @atleta.IsAttivo.ToString().ToLower(), @atleta.IsInfortunato.ToString().ToLower(), @atleta.IsInRiabilitazione.ToString().ToLower(), '@(atleta.DescrizioneInfortunio?.Replace("'", "\\'") ?? "")', @atleta.Altezza, @atleta.Peso)">
-                                    <i class="bi bi-pencil-square me-1"></i> Modifica
+                                    <i class="bi bi-pencil-square me-1"></i> Edit
                                 </button>
 
-                                <form method="post" asp-page-handler="Delete" asp-route-id="@atleta.Id" class="d-inline" onsubmit="return confirm('Sei sicuro di voler eliminare definitivamente questo giocatore? L\'azione è irreversibile.');">
+                                <form method="post" asp-page-handler="Delete" asp-route-id="@atleta.Id" class="d-inline" onsubmit="return confirm('Are you sure you want to permanently delete this player? This action is irreversible.');">
                                     <button class="btn btn-sm btn-outline-danger rounded-circle p-2 lh-1"><i class="bi bi-trash"></i></button>
                                 </form>
                             </td>
@@ -200,7 +199,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content bg-dark border text-white shadow-lg" style="border-color: var(--onus-blue) !important;">
             <div class="modal-header border-secondary">
-                <h5 class="modal-title fw-bold text-gradient-onus" id="modalTitle">Gestione Giocatore</h5>
+                <h5 class="modal-title fw-bold text-gradient-onus" id="modalTitle">Player Management</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
@@ -210,13 +209,13 @@
 
                     <div class="row g-3">
                         <div class="col-12 mb-2">
-                            <label class="form-label text-white-50 small text-uppercase">Foto Profilo</label>
+                            <label class="form-label text-white-50 small text-uppercase">Profile Photo</label>
                             <div class="upload-area" id="dropZone">
                                 <input type="file" id="uploadImmagine" name="UploadImmagine" accept="image/*" onchange="mostraAnteprima(this)">
 
                                 <div id="uploadTextContent">
                                     <div class="icon-placeholder"><i class="bi bi-camera"></i></div>
-                                    <p class="m-0 text-white-50 small mt-2">Trascina qui l'immagine o clicca per caricare</p>
+                                    <p class="m-0 text-white-50 small mt-2">Drag image here or click to upload</p>
                                 </div>
 
                                 <img id="previewImg" class="preview-img mx-auto mt-2" src="" />
@@ -224,59 +223,59 @@
                         </div>
 
                         <div class="col-md-6 form-floating">
-                            <input type="text" id="nome" name="Nome" class="form-control bg-black text-white border-secondary shadow-sm" placeholder="Nome" required />
-                            <label for="nome" class="text-white-50 ms-2">Nome</label>
+                            <input type="text" id="nome" name="Nome" class="form-control bg-black text-white border-secondary shadow-sm" placeholder="Name" required />
+                            <label for="nome" class="text-white-50 ms-2">Name</label>
                         </div>
                         <div class="col-md-6 form-floating">
-                            <input type="text" id="cognome" name="Cognome" class="form-control bg-black text-white border-secondary shadow-sm" placeholder="Cognome" required />
-                            <label for="cognome" class="text-white-50 ms-2">Cognome</label>
+                            <input type="text" id="cognome" name="Cognome" class="form-control bg-black text-white border-secondary shadow-sm" placeholder="Surname" required />
+                            <label for="cognome" class="text-white-50 ms-2">Surname</label>
                         </div>
 
                         <div class="col-md-6 form-floating">
-                            <input type="number" id="altezza" name="Altezza" class="form-control bg-black text-white border-secondary shadow-sm" placeholder="Altezza" required />
-                            <label for="altezza" class="text-white-50 ms-2">Altezza (cm)</label>
+                            <input type="number" id="altezza" name="Altezza" class="form-control bg-black text-white border-secondary shadow-sm" placeholder="Height" required />
+                            <label for="altezza" class="text-white-50 ms-2">Height (cm)</label>
                         </div>
                         <div class="col-md-6 form-floating">
-                            <input type="number" step="0.1" id="peso" name="Peso" class="form-control bg-black text-white border-secondary shadow-sm" placeholder="Peso" required />
-                            <label for="peso" class="text-white-50 ms-2">Peso (kg)</label>
+                            <input type="number" step="0.1" id="peso" name="Peso" class="form-control bg-black text-white border-secondary shadow-sm" placeholder="Weight" required />
+                            <label for="peso" class="text-white-50 ms-2">Weight (kg)</label>
                         </div>
 
                         <div class="col-md-12 form-floating mt-3">
-                            <input type="password" id="password" name="Password" class="form-control bg-black text-white border-secondary shadow-sm" placeholder="Nuova Password" />
-                            <label for="password" class="text-white-50 ms-2">Nuova Password (lascia vuoto per non modificare)</label>
+                            <input type="password" id="password" name="Password" class="form-control bg-black text-white border-secondary shadow-sm" placeholder="New Password" />
+                            <label for="password" class="text-white-50 ms-2">New Password (leave blank to not change)</label>
                         </div>
 
                         <div class="col-md-12 mt-3">
                             <div class="form-check form-switch p-3 bg-black border border-secondary rounded shadow-sm d-flex align-items-center gap-3">
                                 <input class="form-check-input mt-0" type="checkbox" id="isAttivo" name="IsAttivo" value="true" checked style="transform: scale(1.3);">
-                                <label class="form-check-label text-white fw-bold mb-0" for="isAttivo">Giocatore Attivo nella Rosa</label>
+                                <label class="form-check-label text-white fw-bold mb-0" for="isAttivo">Active Player in Roster</label>
                             </div>
                         </div>
 
                         <div class="col-12 mt-4 pt-3 border-top border-secondary">
-                            <h6 class="text-white-50 text-uppercase mb-3 ls-1 small">Stato Medico</h6>
+                            <h6 class="text-white-50 text-uppercase mb-3 ls-1 small">Medical Status</h6>
 
                             <div class="d-flex gap-4 mb-3">
                                 <div class="form-check form-switch">
                                     <input class="form-check-input" type="checkbox" id="isInfortunato" name="IsInfortunato" value="true" onchange="gestisciStatoFisico('infortunato')">
-                                    <label class="form-check-label fw-bold" style="color: #ff4757;" for="isInfortunato">Infortunato</label>
+                                    <label class="form-check-label fw-bold" style="color: #ff4757;" for="isInfortunato">Injured</label>
                                 </div>
 
                                 <div class="form-check form-switch">
                                     <input class="form-check-input" type="checkbox" id="isInRiabilitazione" name="IsInRiabilitazione" value="true" onchange="gestisciStatoFisico('riabilitazione')">
-                                    <label class="form-check-label fw-bold" style="color: #ffa502;" for="isInRiabilitazione">In Riabilitazione</label>
+                                    <label class="form-check-label fw-bold" style="color: #ffa502;" for="isInRiabilitazione">In Rehab</label>
                                 </div>
                             </div>
 
                             <div class="mt-2" id="boxDescrizioneInfortunio" style="display: none;">
-                                <label class="form-label text-white-50 small">Descrizione Dettagliata (Visibile nella Dashboard)</label>
-                                <textarea id="descrizioneInfortunio" name="DescrizioneInfortunio" class="form-control bg-black text-white border-secondary shadow-sm" rows="3" placeholder="Inserisci i dettagli dell'infortunio..."></textarea>
+                                <label class="form-label text-white-50 small">Detailed Description (Visible on Dashboard)</label>
+                                <textarea id="descrizioneInfortunio" name="DescrizioneInfortunio" class="form-control bg-black text-white border-secondary shadow-sm" rows="3" placeholder="Enter injury details..."></textarea>
                             </div>
                         </div>
                     </div>
 
                     <div class="d-grid mt-4 pt-2">
-                        <button type="submit" class="btn btn-onus rounded-pill py-3 fw-bold shadow-lg">SALVA GIOCATORE <i class="bi bi-check-lg ms-1"></i></button>
+                        <button type="submit" class="btn btn-onus rounded-pill py-3 fw-bold shadow-lg">SAVE PLAYER <i class="bi bi-check-lg ms-1"></i></button>
                     </div>
                 </form>
             </div>
@@ -341,7 +340,7 @@
         }
     }
 
-    // 5. Apertura Modale (CORRETTA FIRMA PER ALTEZZA E PESO)
+    // 5. Apertura Modale
     function apriModaleAtleta(id, nome, cognome, password, foto, attivo, infortunato = false, riabilitazione = false, descrizione = '', altezza = 0, peso = 0) {
         document.getElementById('atletaId').value = id;
         document.getElementById('nome').value = nome;
@@ -370,7 +369,7 @@
             document.getElementById('uploadTextContent').style.display = 'block';
         }
 
-        document.getElementById('modalTitle').innerText = id === 0 ? "Nuovo Giocatore" : "Modifica " + nome;
+        document.getElementById('modalTitle').innerText = id === 0 ? "New Player" : "Edit " + nome;
 
         var myModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('atletaModal'));
         myModal.show();

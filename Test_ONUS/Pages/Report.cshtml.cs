@@ -20,7 +20,7 @@ namespace Test_ONUS.Pages
             _context = context;
         }
 
-        // Variabili necessarie per far funzionare la grafica del Report
+        // Variables needed for the Report graphics
         public string NomeAtletaSelezionato { get; set; } = "";
         public int AltezzaAtleta { get; set; }
         public double PesoAtleta { get; set; }
@@ -33,14 +33,10 @@ namespace Test_ONUS.Pages
             int? userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null) return RedirectToPage("/Login");
 
-            // Cerca l'ID passato dalla pagina "Analisi" o usa quello dell'utente loggato
+            // Find the ID passed from the "Analisi" page or use the logged-in user's ID
             int idDaCercare = atletaId ?? userId.Value;
 
-            var atleta = await _context.Atleti
-                .Include(a => a.SessioniAllenamento)
-                    .ThenInclude(s => s.Valori)
-                        .ThenInclude(v => v.Parametro)
-                .FirstOrDefaultAsync(a => a.Id == idDaCercare);
+            var atleta = await _context.Atleti.FindAsync(idDaCercare);
 
             if (atleta != null)
             {
@@ -48,18 +44,24 @@ namespace Test_ONUS.Pages
                 AltezzaAtleta = atleta.Altezza;
                 PesoAtleta = atleta.Peso;
 
-                // Prendi le sessioni in ordine decrescente (le più recenti in alto nella tabella)
-                SessioniAtleta = atleta.SessioniAllenamento.OrderByDescending(s => s.Data).ToList();
+                // Fetch sessions directly from the context instead of using Include on Atleta
+                // Order descending (newest at the top)
+                SessioniAtleta = await _context.Sessioni
+                    .Include(s => s.Valori)
+                        .ThenInclude(v => v.Parametro)
+                    .Where(s => s.AtletaId == idDaCercare)
+                    .OrderByDescending(s => s.Data)
+                    .ToListAsync();
 
-                // Calcolo Carico ultimi 7 giorni
+                // Load last 7 days calculation
                 var dataInizio = DateTime.Now.Date.AddDays(-7);
-                CaricoSettimanale = atleta.SessioniAllenamento
+                CaricoSettimanale = SessioniAtleta
                     .Where(s => s.Data >= dataInizio)
                     .Sum(s => s.CaricoCalcolato);
 
-                // Calcolo ACWR Semplice (Carico Acuto / Carico Cronico diviso 4)
-                double acute = atleta.SessioniAllenamento.Where(s => s.Data >= DateTime.Now.AddDays(-7)).Sum(s => s.CaricoCalcolato);
-                double chronic = atleta.SessioniAllenamento.Where(s => s.Data >= DateTime.Now.AddDays(-28)).Sum(s => s.CaricoCalcolato) / 4.0;
+                // Simple ACWR Calculation (Acute Load / Chronic Load divided by 4)
+                double acute = SessioniAtleta.Where(s => s.Data >= DateTime.Now.AddDays(-7)).Sum(s => s.CaricoCalcolato);
+                double chronic = SessioniAtleta.Where(s => s.Data >= DateTime.Now.AddDays(-28)).Sum(s => s.CaricoCalcolato) / 4.0;
 
                 double currentAcwr = chronic > 0 ? Math.Round(acute / chronic, 2) : 0;
                 DatiACWR.Add(currentAcwr);

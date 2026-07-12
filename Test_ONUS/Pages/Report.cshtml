@@ -1,19 +1,20 @@
 ﻿@page
 @model Test_ONUS.Pages.ReportModel
 @{
-    ViewData["Title"] = "Report Atleta";
+    ViewData["Title"] = "Athlete Report";
     Layout = "_Layout";
 }
 
+<!-- STREAMING_CHUNK: Styling the report card and print layout... -->
 <style>
-    /* STILE PER LA SCHERMATA (Tema Cyber) */
+    /* SCREEN STYLES (Cyber Theme) */
     .report-card {
         border: 1px solid rgba(0, 160, 255, 0.3) !important;
         box-shadow: 0 0 20px rgba(0, 160, 255, 0.1);
         background-color: #1a1a1a;
     }
 
-    /* STILE SPECIFICO PER LA STAMPA SU CARTA (Uso la doppia @@ per Razor) */
+    /* SPECIFIC STYLES FOR PRINTING (Using double @@ for Razor) */
     @@media print {
         header, footer, .no-print, .offcanvas-backdrop {
             display: none !important;
@@ -48,24 +49,26 @@
     }
 </style>
 
+<!-- STREAMING_CHUNK: Rendering action buttons and header... -->
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4 no-print border-bottom border-secondary pb-3">
         <a href="/Analisi" class="btn btn-outline-light rounded-pill px-4 shadow-sm">
-            <i class="bi bi-arrow-left me-1"></i> Torna ad Analisi
+            <i class="bi bi-arrow-left me-1"></i> Back to Analysis
         </a>
         <button onclick="window.print()" class="btn btn-onus rounded-pill fw-bold shadow-lg px-4 fs-5">
-            <i class="bi bi-printer-fill me-1"></i> STAMPA REPORT
+            <i class="bi bi-printer-fill me-1"></i> PRINT REPORT
         </button>
     </div>
 
+    <!-- STREAMING_CHUNK: Rendering the main report card and athlete stats... -->
     <div class="card report-card text-white mb-5">
         <div class="card-body p-4 p-md-5">
             <div class="row align-items-center border-bottom border-secondary pb-4 mb-4">
                 <div class="col-md-6 d-flex align-items-center mb-3 mb-md-0">
                     <img src="~/Img/logo-onus.jpeg" alt="ONUS Logo" width="70" height="70" class="rounded-circle me-3 border border-secondary shadow-sm">
                     <div>
-                        <h2 class="text-gradient-onus fw-bold tracking-wide m-0">REPORT PRESTAZIONE</h2>
-                        <p class="text-white-50 m-0 small">Generato il: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</p>
+                        <h2 class="text-gradient-onus fw-bold tracking-wide m-0">PERFORMANCE REPORT</h2>
+                        <p class="text-white-50 m-0 small">Generated on: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</p>
                     </div>
                 </div>
                 <div class="col-md-6 text-md-end">
@@ -77,39 +80,41 @@
                 </div>
             </div>
 
+            <!-- STREAMING_CHUNK: Rendering load and ACWR metrics... -->
             <div class="row g-4 mb-5">
                 <div class="col-md-4">
                     <div class="p-4 bg-black border border-secondary rounded-3 text-center h-100 shadow-sm" style="border-bottom: 4px solid var(--onus-blue) !important;">
-                        <h6 class="text-white-50 text-uppercase small ls-1 mb-2">Carico Settimanale</h6>
+                        <h6 class="text-white-50 text-uppercase small ls-1 mb-2">Weekly Load</h6>
                         <h1 class="text-white fw-bold m-0 display-4">@Model.CaricoSettimanale</h1>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="p-4 bg-black border border-secondary rounded-3 text-center h-100 shadow-sm" style="border-bottom: 4px solid var(--onus-green) !important;">
-                        <h6 class="text-white-50 text-uppercase small ls-1 mb-2">ACWR Attuale</h6>
-                        <h1 class="text-gradient-onus fw-bold m-0 display-4">@(Model.DatiACWR != null && Model.DatiACWR.Any() ? Model.DatiACWR.LastOrDefault().ToString("0.00") : "N/D")</h1>
+                        <h6 class="text-white-50 text-uppercase small ls-1 mb-2">Current ACWR</h6>
+                        <h1 class="text-gradient-onus fw-bold m-0 display-4">@(Model.DatiACWR != null && Model.DatiACWR.Any() ? Model.DatiACWR.LastOrDefault().ToString("0.00") : "N/A")</h1>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="p-4 bg-black border border-secondary rounded-3 text-center h-100 shadow-sm" style="border-bottom: 4px solid #f1c40f !important;">
-                        <h6 class="text-white-50 text-uppercase small ls-1 mb-2">Sessioni Registrate</h6>
+                        <h6 class="text-white-50 text-uppercase small ls-1 mb-2">Logged Sessions</h6>
                         <h1 class="text-white fw-bold m-0 display-4">@(Model.SessioniAtleta?.Count ?? 0)</h1>
                     </div>
                 </div>
             </div>
 
-            <h5 class="text-gradient-onus fw-bold mb-3 tracking-wide">DETTAGLIO SESSIONI</h5>
+            <!-- STREAMING_CHUNK: Rendering the session history table... -->
+            <h5 class="text-gradient-onus fw-bold mb-3 tracking-wide">SESSION DETAILS</h5>
             <div class="table-responsive">
                 <table class="table table-dark table-striped table-bordered border-secondary align-middle m-0">
                     <thead>
                         <tr class="text-uppercase text-white-50 small ls-1" style="border-bottom: 2px solid var(--onus-blue);">
-                            <th class="py-3 ps-3">Data</th>
-                            <th class="text-center">Durata (Min)</th>
+                            <th class="py-3 ps-3">Date</th>
+                            <th class="text-center">Duration (Min)</th>
                             <th class="text-center">RPE (0-10)</th>
                             <th class="text-center">Player Load</th>
-                            <th class="text-center">Sonno</th>
-                            <th class="text-center">Dolore</th>
-                            <th style="width: 25%;">Note Staff/Atleta</th>
+                            <th class="text-center">Sleep</th>
+                            <th class="text-center">Pain</th>
+                            <th style="width: 25%;">Staff/Athlete Notes</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -118,6 +123,7 @@
                             @foreach (var s in Model.SessioniAtleta)
                             {
                                 var valRpe = s.Valori.FirstOrDefault(v => v.Parametro.IsCalcoloCarico)?.Valore ?? 0;
+                                // Keeping "Sonno" and "Dolore" in Italian here since they query DB records which are seeded in Italian
                                 var valSonno = s.Valori.FirstOrDefault(v => v.Parametro.Nome.Contains("Sonno", StringComparison.OrdinalIgnoreCase))?.Valore ?? 0;
                                 var valDolore = s.Valori.FirstOrDefault(v => v.Parametro.Nome.Contains("Dolore", StringComparison.OrdinalIgnoreCase) || v.Parametro.Nome.Contains("Indolenzimento", StringComparison.OrdinalIgnoreCase))?.Valore ?? 0;
 
@@ -135,17 +141,23 @@
                         else
                         {
                             <tr>
-                                <td colspan="7" class="text-center text-white-50 py-4 fst-italic">Nessun dato registrato nel periodo selezionato.</td>
+                                <td colspan="7" class="text-center text-white-50 py-4 fst-italic">No data recorded in the selected period.</td>
                             </tr>
                         }
                     </tbody>
                 </table>
             </div>
 
+            <!-- STREAMING_CHUNK: Rendering the report footer... -->
             <div class="mt-5 pt-4 border-top border-secondary text-center text-white-50 small">
                 <p class="m-0 fw-bold">ONUS Athlete Monitoring System &copy; @DateTime.Now.Year</p>
-                <p class="m-0 mt-1">Documento strettamente confidenziale. Riservato all'uso esclusivo dello staff tecnico e medico.</p>
+                <p class="m-0 mt-1">Strictly confidential document. Restricted to the exclusive use of coaching and medical staff.</p>
             </div>
         </div>
     </div>
 </div>
+```eof
+
+Tutta la formattazione e gli stili specifici per l'esportazione in PDF (che rimuove colori di sfondo e navbar in stampa per risparmiare inchiostro) sono rimasti preservati!
+
+Vuoi testare se c'è altro da tradurre o se c'è un'altra funzionalità da ritoccare?
