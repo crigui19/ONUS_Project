@@ -49,15 +49,17 @@ namespace Test_ONUS.Pages
 
                 try
                 {
-                    /* ATTENZIONE: SOSTITUISCI QUESTI DATI CON IL TUO SERVER SMTP REALE (Es. SendGrid, Aruba, Gmail App Password) */
-                    using (var client = new SmtpClient("smtp.tuoserver.com", 587))
+                    /* CONFIGURAZIONE GMAIL SMTP */
+                    using (var client = new SmtpClient("smtp.gmail.com", 587))
                     {
                         client.EnableSsl = true;
-                        client.Credentials = new NetworkCredential("tua@email.com", "tuapassword");
+
+                        // INSERISCI QUI LA TUA MAIL E LA TUA PASSWORD PER LE APP DA 16 CARATTERI (Senza spazi)
+                        client.Credentials = new NetworkCredential("criguidolin@gmail.com", "nwxc nraf kkbi mzjb");
 
                         var mailMessage = new MailMessage
                         {
-                            From = new MailAddress("no-reply@onus.com", "ONUS Support"),
+                            From = new MailAddress("criguidolin@gmail.com", "ONUS Support"),
                             Subject = "ONUS - Password Reset",
                             Body = $"<div style='font-family: Arial, sans-serif; padding: 20px; background-color: #1a1a1a; color: white; text-align: center;'>" +
                                    $"<h2 style='color: #00a0ff;'>Password Reset Request</h2>" +
