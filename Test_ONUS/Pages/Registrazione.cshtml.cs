@@ -27,6 +27,9 @@ namespace Test_ONUS.Pages
             [Required] public string Cognome { get; set; } = "";
             [Required] public string Password { get; set; } = "";
             [Required] public string NomeSquadra { get; set; } = "";
+            // AGGIUNGI QUESTA RIGA:
+            [Required, EmailAddress]
+            public string Email { get; set; } = "";
         }
 
         public void OnGet() { }
@@ -55,8 +58,7 @@ namespace Test_ONUS.Pages
                 {
                     Nome = Input.Nome,
                     Cognome = Input.Cognome,
-
-
+                    Email = Input.Email,
                     Password = BCrypt.Net.BCrypt.HashPassword(Input.Password),
                     SquadraId = nuovaSquadra.Id,
                     Squadra = nuovaSquadra

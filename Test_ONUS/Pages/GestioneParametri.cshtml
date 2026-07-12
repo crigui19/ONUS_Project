@@ -1,7 +1,7 @@
 ﻿@page
 @model Test_ONUS.Pages.GestioneParametriModel
 @{
-    ViewData["Title"] = "Gestione Parametri";
+    ViewData["Title"] = "Parameter Management";
 }
 
 <div class="container py-4">
@@ -16,30 +16,30 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary pb-3">
         <h2 class="text-white fw-bold text-uppercase tracking-wide border-start border-4 ps-3 m-0" style="border-color: var(--onus-blue) !important;">
-            <span class="text-gradient-onus">Gestione</span> Parametri
+            <span class="text-gradient-onus">Parameter</span> Management
         </h2>
         <button class="btn btn-onus rounded-pill fw-bold shadow-lg px-4" onclick="apriModale(0, '', 0, 10, false, true)">
-            <i class="bi bi-plus-lg me-1"></i> NUOVO PARAMETRO
+            <i class="bi bi-plus-lg me-1"></i> NEW PARAMETER
         </button>
     </div>
 
-    <!-- Tabella Parametri -->
+    <!-- Parameter Table -->
     <div class="card border-0 shadow-lg bg-dark overflow-hidden" style="border: 1px solid rgba(0, 160, 255, 0.2) !important;">
         <div class="table-responsive">
             <table class="table table-dark table-hover align-middle m-0">
                 <thead>
                     <tr class="text-uppercase text-white-50 small ls-1" style="border-bottom: 2px solid var(--onus-blue);">
-                        <th class="ps-4 py-3">Nome Parametro</th>
-                        <th class="text-center">Range Valori</th>
-                        <th class="text-center">Ruolo</th>
-                        <th class="text-center">Stato</th>
-                        <th class="text-end pe-4">Azioni</th>
+                        <th class="ps-4 py-3">Parameter Name</th>
+                        <th class="text-center">Value Range</th>
+                        <th class="text-center">Role</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-end pe-4">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var p in Model.Parametri)
                     {
-                        // Identifica se è un parametro base del sistema
+                        // Identify if it's a fixed system parameter
                         bool isFisso = (p.Nome.Equals("RPE", StringComparison.OrdinalIgnoreCase) ||
                                         p.Nome.Contains("Sonno", StringComparison.OrdinalIgnoreCase) ||
                                         p.Nome.Equals("Stress", StringComparison.OrdinalIgnoreCase));
@@ -48,20 +48,20 @@
                             <td class="ps-4 fw-bold text-white fs-5">@p.Nome</td>
                             <td class="text-center text-white-50">
                                 <span class="badge bg-black border border-secondary text-white-50 px-3 py-2 rounded-pill">
-                                    Da @p.ValoreMinimo a @p.ValoreMassimo
+                                    From @p.ValoreMinimo to @p.ValoreMassimo
                                 </span>
                             </td>
                             <td class="text-center">
                                 @if (p.IsCalcoloCarico)
                                 {
                                     <span class="badge bg-black border fw-bold px-3 py-2 rounded-pill shadow-sm" style="border-color: var(--onus-green); color: var(--onus-green); letter-spacing: 1px;">
-                                        🔥 CALCOLO CARICO (RPE)
+                                        🔥 LOAD CALCULATION (RPE)
                                     </span>
                                 }
                                 else
                                 {
                                     <span class="badge bg-black border border-secondary text-white-50 px-3 py-2 rounded-pill shadow-sm" style="letter-spacing: 1px;">
-                                        📊 MONITORAGGIO
+                                        📊 MONITORING
                                     </span>
                                 }
                             </td>
@@ -69,13 +69,13 @@
                                 @if (p.IsAttivo)
                                 {
                                     <span class="badge bg-black border text-white px-3 py-2 rounded-pill shadow-sm" style="border-color: var(--onus-green);">
-                                        <span style="color: var(--onus-green); margin-right: 4px;">●</span> ATTIVO
+                                        <span style="color: var(--onus-green); margin-right: 4px;">●</span> ACTIVE
                                     </span>
                                 }
                                 else
                                 {
                                     <span class="badge bg-black border border-secondary text-white-50 px-3 py-2 rounded-pill">
-                                        <span class="text-danger" style="margin-right: 4px;">●</span> INATTIVO
+                                        <span class="text-danger" style="margin-right: 4px;">●</span> INACTIVE
                                     </span>
                                 }
                             </td>
@@ -83,14 +83,14 @@
                                 @if (isFisso)
                                 {
                                     <span class="badge bg-dark border border-secondary text-white-50 px-3 py-2 rounded-pill">
-                                        <i class="bi bi-lock-fill me-1"></i> DI SISTEMA
+                                        <i class="bi bi-lock-fill me-1"></i> SYSTEM
                                     </span>
                                 }
                                 else
                                 {
                                     <button class="btn btn-sm btn-outline-onus rounded-pill px-3 shadow-sm"
                                             onclick="apriModale(@p.Id, '@Html.Raw(p.Nome.Replace("'", "\\'"))', @p.ValoreMinimo, @p.ValoreMassimo, @(p.IsCalcoloCarico.ToString().ToLower()), @(p.IsAttivo.ToString().ToLower()))">
-                                        <i class="bi bi-pencil-square me-1"></i> Modifica
+                                        <i class="bi bi-pencil-square me-1"></i> Edit
                                     </button>
                                 }
                             </td>
@@ -102,12 +102,12 @@
     </div>
 </div>
 
-<!-- Modale Gestione Parametro -->
+<!-- Parameter Management Modal -->
 <div class="modal fade" id="modalParametro" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content bg-dark text-white shadow-lg" style="border: 1px solid var(--onus-blue) !important;">
             <div class="modal-header border-secondary">
-                <h5 class="modal-title fw-bold text-gradient-onus tracking-wide" id="modalTitle">Nuovo Parametro</h5>
+                <h5 class="modal-title fw-bold text-gradient-onus tracking-wide" id="modalTitle">New Parameter</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
@@ -115,18 +115,18 @@
                     <input type="hidden" id="pId" name="Id" value="0" />
 
                     <div class="form-floating mb-3">
-                        <input type="text" id="pNome" name="Nome" class="form-control bg-black text-white border-secondary shadow-sm fw-bold" placeholder="Nome" required />
-                        <label for="pNome" class="text-white-50">Nome Parametro (es. Idratazione)</label>
+                        <input type="text" id="pNome" name="Nome" class="form-control bg-black text-white border-secondary shadow-sm fw-bold" placeholder="Name" required />
+                        <label for="pNome" class="text-white-50">Parameter Name (e.g. Hydration)</label>
                     </div>
 
                     <div class="row g-3 mb-4">
                         <div class="col-6 form-floating">
                             <input type="number" id="pMin" name="ValoreMinimo" class="form-control bg-black text-white border-secondary shadow-sm text-center fs-5" value="0" required />
-                            <label for="pMin" class="text-white-50 ms-2">Valore Minimo</label>
+                            <label for="pMin" class="text-white-50 ms-2">Minimum Value</label>
                         </div>
                         <div class="col-6 form-floating">
                             <input type="number" id="pMax" name="ValoreMassimo" class="form-control bg-black text-white border-secondary shadow-sm text-center fs-5" value="10" required />
-                            <label for="pMax" class="text-white-50 ms-2">Valore Massimo</label>
+                            <label for="pMax" class="text-white-50 ms-2">Maximum Value</label>
                         </div>
                     </div>
 
@@ -134,20 +134,20 @@
                         <input class="form-check-input mt-0" type="checkbox" id="pIsCalcoloCarico" name="IsCalcoloCarico" value="true" style="transform: scale(1.3);">
                         <div>
                             <label class="form-check-label fw-bold" style="color: var(--onus-blue);" for="pIsCalcoloCarico">
-                                Usa per calcolo Carico (RPE)
+                                Use for Load Calculation (RPE)
                             </label>
-                            <div class="small text-white-50 mt-1" style="font-size: 0.85em; line-height: 1.2;">Se attivo, questo parametro verrà moltiplicato per i minuti della sessione per ottenere il Player Load.</div>
+                            <div class="small text-white-50 mt-1" style="font-size: 0.85em; line-height: 1.2;">If active, this parameter will be multiplied by session duration to calculate Player Load.</div>
                         </div>
                     </div>
 
                     <div class="form-check form-switch p-3 rounded-3 bg-black border shadow-sm d-flex align-items-center gap-3" style="border-color: rgba(113, 217, 45, 0.3) !important;">
                         <input class="form-check-input mt-0" type="checkbox" id="pIsAttivo" name="IsAttivo" value="true" checked style="transform: scale(1.3);">
-                        <label class="form-check-label text-white fw-bold" for="pIsAttivo">Parametro Attivo e Visibile</label>
+                        <label class="form-check-label text-white fw-bold" for="pIsAttivo">Parameter Active and Visible</label>
                     </div>
 
                     <div class="d-grid mt-4 pt-3 border-top border-secondary">
                         <button type="submit" class="btn btn-onus rounded-pill fw-bold py-3 shadow-lg fs-5">
-                            SALVA PARAMETRO <i class="bi bi-check2-circle ms-1"></i>
+                            SAVE PARAMETER <i class="bi bi-check2-circle ms-1"></i>
                         </button>
                     </div>
                 </form>
@@ -167,9 +167,11 @@
             document.getElementById('pIsCalcoloCarico').checked = isCalcolo;
             document.getElementById('pIsAttivo').checked = isAttivo;
 
-            document.getElementById('modalTitle').innerText = id === 0 ? "NUOVO PARAMETRO" : "MODIFICA " + nome.toUpperCase();
+            document.getElementById('modalTitle').innerText = id === 0 ? "NEW PARAMETER" : "EDIT " + nome.toUpperCase();
 
             new bootstrap.Modal(document.getElementById('modalParametro')).show();
         }
     </script>
 }
+```
+eof

@@ -3,7 +3,7 @@
 @using Microsoft.AspNetCore.Http
 
 <div class="container py-4">
-    <h2 class="text-center mb-5 fw-bold tracking-wide text-gradient-onus" style="letter-spacing: 2px;">SELEZIONA ATLETA</h2>
+    <h2 class="text-center mb-5 fw-bold tracking-wide text-gradient-onus" style="letter-spacing: 2px;">SELECT ATHLETE</h2>
     <div class="row g-4">
         @foreach (var atleta in Model.Atleti)
         {
@@ -27,14 +27,14 @@
                             {
                                 <button type="button" class="btn btn-sm w-100 fw-bold shadow-sm" style="background-color: #ff4757; color: white; border: none;"
                                         data-bs-toggle="modal" data-bs-target="#modalStatus-@atleta.Id">
-                                    Infortunato
+                                    Injured
                                 </button>
                             }
                             else if (atleta.IsInRiabilitazione)
                             {
                                 <button type="button" class="btn btn-sm text-dark w-100 fw-bold shadow-sm" style="background-color: #ffa502; border: none;"
                                         data-bs-toggle="modal" data-bs-target="#modalStatus-@atleta.Id">
-                                    In Riabilitazione
+                                    In Rehab
                                 </button>
                             }
                         </div>
@@ -48,15 +48,15 @@
                             <div class="modal-content bg-dark text-white border-secondary" style="border: 1px solid rgba(255, 71, 87, 0.5);">
                                 <div class="modal-header border-secondary">
                                     <h5 class="modal-title fw-bold" style="color: @(atleta.IsInfortunato ? "#ff4757" : "#ffa502")">
-                                        @(atleta.IsInfortunato ? "Infortunio" : "Riabilitazione"): @atleta.Nome @atleta.Cognome
+                                        @(atleta.IsInfortunato ? "Injury" : "Rehab"): @atleta.Nome @atleta.Cognome
                                     </h5>
                                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body text-start">
-                                    <h6 class="text-muted text-uppercase ls-1 small">Descrizione / Note</h6>
+                                    <h6 class="text-muted text-uppercase ls-1 small">Details / Notes</h6>
                                     @if (string.IsNullOrWhiteSpace(atleta.DescrizioneInfortunio))
                                     {
-                                        <p class="fst-italic text-secondary mt-2">Nessuna descrizione presente per questo giocatore.</p>
+                                        <p class="fst-italic text-secondary mt-2">No description available for this player.</p>
                                     }
                                     else
                                     {
@@ -64,7 +64,7 @@
                                     }
                                 </div>
                                 <div class="modal-footer border-secondary">
-                                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Chiudi</button>
+                                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Close</button>
                                 </div>
                             </div>
                         </div>
@@ -80,8 +80,8 @@
         <div class="modal-content bg-dark text-white shadow-lg" style="border: 2px solid var(--onus-blue);">
             <div class="modal-header border-0 pb-0">
                 <div>
-                    <small class="text-white-50 text-uppercase ls-1">Atleta</small>
-                    <h2 class="modal-title fw-bold text-gradient-onus" id="lblNomeGiocatore">Giocatore</h2>
+                    <small class="text-white-50 text-uppercase ls-1">Athlete</small>
+                    <h2 class="modal-title fw-bold text-gradient-onus" id="lblNomeGiocatore">Player</h2>
                 </div>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
@@ -110,25 +110,25 @@
                                         }
                                         else
                                         {
+
                                             <span>📊</span>
                                         }
                                         @param.Nome
-                                        <small class="text-white-50 d-block" style="font-size:0.75em; margin-top:-5px;">(Da @param.ValoreMinimo a @param.ValoreMassimo)</small>
+                                        <small class="text-white-50 d-block" style="font-size:0.75em; margin-top:-5px;">(Range @param.ValoreMinimo to @param.ValoreMassimo)</small>
                                     </span>
                                     <span class="fs-2 fw-bold text-gradient-onus" id="display_@param.Id">-</span>
                                 </div>
                             }
 
                             <div class="mt-2">
-                                <textarea name="Note" class="form-control bg-black text-white border-secondary shadow-sm" rows="3" placeholder="Aggiungi una nota sull'allenamento..."></textarea>
+                                <textarea name="Note" class="form-control bg-black text-white border-secondary shadow-sm" rows="3" placeholder="Add a training note..."></textarea>
                             </div>
                         </div>
 
                         <div class="col-md-6">
-
                             <div class="d-flex justify-content-end mb-2">
                                 <button type="button" class="btn btn-sm btn-outline-onus rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalGuidaImmagine">
-                                    <i class="bi bi-info-circle me-1"></i> Scala Sforzo
+                                    <i class="bi bi-info-circle me-1"></i> RPE Scale
                                 </button>
                             </div>
 
@@ -159,9 +159,9 @@
 
                             <div class="d-grid gap-2">
                                 <button type="submit" class="btn btn-onus py-3 fw-bold fs-5 text-uppercase shadow-lg rounded-pill" style="letter-spacing: 1px;">
-                                    Salva Dati <i class="bi bi-check2-circle ms-1"></i>
+                                    Save Data <i class="bi bi-check2-circle ms-1"></i>
                                 </button>
-                                <a href="#" id="btnVediGrafici" class="btn btn-link text-white-50 text-decoration-none py-2 small">Vai alle Analisi del giocatore -></a>
+                                <a href="#" id="btnVediGrafici" class="btn btn-link text-white-50 text-decoration-none py-2 small">Go to Player Analysis -></a>
                             </div>
                         </div>
                     </div>
@@ -171,21 +171,19 @@
     </div>
 </div>
 
-<div class="modal fade" id="modalGuidaImmagine" tabindex="-1" aria-labelledby="modalGuidaImmagineLabel" aria-hidden="true">
+<div class="modal fade" id="modalGuidaImmagine" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content bg-dark text-white border-secondary">
             <div class="modal-header border-secondary">
-                <h5 class="modal-title text-gradient-onus fw-bold" id="modalGuidaImmagineLabel">Scala di Riferimento</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-toggle="modal" data-bs-target="#inputModal" aria-label="Chiudi"></button>
+                <h5 class="modal-title text-gradient-onus fw-bold">Reference Scale</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-toggle="modal" data-bs-target="#inputModal" aria-label="Close"></button>
             </div>
             <div class="modal-body text-center">
-                <img src="~/Img/info.jpeg" alt="Guida Obiettivo" class="img-fluid rounded shadow" style="border: 2px solid var(--onus-blue);" />
-                <p class="mt-3 text-white-50 small">
-                    Fai riferimento a questa scala per valutare l'intensità (RPE) in modo accurato.
-                </p>
+                <img src="~/Img/info.jpeg" alt="Guide" class="img-fluid rounded shadow" style="border: 2px solid var(--onus-blue);" />
+                <p class="mt-3 text-white-50 small">Refer to this scale to accurately assess intensity (RPE).</p>
             </div>
             <div class="modal-footer border-secondary">
-                <button type="button" class="btn btn-onus rounded-pill fw-bold px-4" data-bs-toggle="modal" data-bs-target="#inputModal">Ho capito</button>
+                <button type="button" class="btn btn-onus rounded-pill fw-bold px-4" data-bs-toggle="modal" data-bs-target="#inputModal">I understand</button>
             </div>
         </div>
     </div>
@@ -193,21 +191,21 @@
 
 @if (HttpContext.Session.GetString("Ruolo") == "Atleta")
 {
-    <div class="modal fade" id="modalNotificheAutomatico" tabindex="-1" aria-labelledby="modalNotificheLabel" aria-hidden="true">
+    <div class="modal fade" id="modalNotificheAutomatico" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content bg-dark text-white border-secondary text-center shadow-lg" style="border: 1px solid var(--onus-green) !important;">
                 <div class="modal-header border-secondary justify-content-center">
-                    <h5 class="modal-title text-gradient-onus fw-bold fs-4" id="modalNotificheLabel">🔔 Resta Aggiornato!</h5>
+                    <h5 class="modal-title text-gradient-onus fw-bold fs-4">🔔 Stay Updated!</h5>
                 </div>
                 <div class="modal-body p-4">
-                    <p class="fs-5">Vuoi ricevere un promemoria per inserire i dati a fine allenamento?</p>
-                    <p class="text-white-50 small mb-4">Clicca su "Attiva Ora" e poi su "Consenti" nel prossimo avviso.</p>
+                    <p class="fs-5">Do you want to receive a reminder to enter your data after training?</p>
+                    <p class="text-white-50 small mb-4">Click "Activate Now" and then "Allow" in the next prompt.</p>
 
                     <button class="btn btn-onus btn-lg w-100 mb-3 fw-bold rounded-pill shadow" onclick="richiediPermessoNotifiche()" data-bs-dismiss="modal">
-                        Attiva Ora <i class="bi bi-rocket-takeoff ms-1"></i>
+                        Activate Now <i class="bi bi-rocket-takeoff ms-1"></i>
                     </button>
                     <button class="btn btn-outline-secondary w-100 rounded-pill" data-bs-dismiss="modal">
-                        Forse più tardi
+                        Maybe later
                     </button>
                 </div>
             </div>
@@ -216,8 +214,6 @@
 }
 
 <script>
-    // Lo script originale per il Numpad e le Notifiche resta invariato,
-    // ho aggiunto solo una classe CSS attiva (.border-onus) quando si seleziona un campo.
     var paramIds = [@string.Join(",", Model.ParametriDashboard.Select(p => p.Id))];
     var currentParamId = null;
     var modalInput;
@@ -225,7 +221,6 @@
     function apriModale(id, nome) {
         document.getElementById('hiddenAtletaId').value = id;
         document.getElementById('lblNomeGiocatore').innerText = nome;
-
         document.querySelector('textarea[name="Note"]').value = '';
 
         paramIds.forEach(pid => {
@@ -249,7 +244,7 @@
     function selezionaCampo(id) {
         currentParamId = id;
         document.querySelectorAll('.param-btn').forEach(el => {
-            el.style.borderColor = '#6c757d'; // border-secondary
+            el.style.borderColor = '#6c757d';
             el.style.backgroundColor = 'black';
         });
         var btn = document.getElementById('btn_' + id);
@@ -296,8 +291,7 @@
         let rpeInput = document.querySelector('input[data-is-rpe="true"]');
         if (rpeInput && rpeInput.value === '') {
             e.preventDefault();
-            alert("Attenzione: Il valore RPE (🔥) è obbligatorio per salvare l'allenamento.");
-
+            alert("Warning: The RPE value (🔥) is mandatory to save the training session.");
             let rpeId = rpeInput.id.split('_')[1];
             selezionaCampo(parseInt(rpeId));
         }
@@ -315,9 +309,6 @@
 
 @section Scripts {
     <script>
-        // ========================================================
-        // 1. INCOLLA QUI SOLO LA TUA PUBLIC KEY
-        // ========================================================
         const applicationServerPublicKey = 'INCOLLA_QUI_LA_TUA_PUBLIC_KEY';
 
         document.addEventListener("DOMContentLoaded", function() {
@@ -345,7 +336,7 @@
 
         async function richiediPermessoNotifiche() {
             if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-                alert('Il tuo browser o telefono non supporta le notifiche Push.');
+                alert('Your browser or device does not support Push notifications.');
                 return;
             }
 
@@ -353,7 +344,7 @@
                 const permission = await Notification.requestPermission();
 
                 if (permission !== 'granted') {
-                    console.log('Notifiche bloccate dall\'utente.');
+                    console.log('Notifications blocked by user.');
                     return;
                 }
 
@@ -371,15 +362,15 @@
                 });
 
                 if (response.ok) {
-                    alert('Notifiche attivate con successo! 🎉');
+                    alert('Notifications activated successfully! 🎉');
                 } else {
-                    console.error('Errore dal server:', response);
-                    alert('Errore durante il salvataggio nel database.');
+                    console.error('Server error:', response);
+                    alert('Error saving to the database.');
                 }
 
             } catch (error) {
-                console.error('Errore durante l\'iscrizione:', error);
-                alert('Si è verificato un errore.');
+                console.error('Subscription error:', error);
+                alert('An error occurred.');
             }
         }
     </script>

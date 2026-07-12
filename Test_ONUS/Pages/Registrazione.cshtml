@@ -1,35 +1,38 @@
 ﻿@page
 @model Test_ONUS.Pages.RegistrazioneModel
 @{
-    ViewData["Title"] = "Registrazione Preparatore";
+    ViewData["Title"] = "Coach Registration";
 }
 
 <div class="container d-flex align-items-center justify-content-center" style="min-height: 80vh;">
-    <!-- Card scura a tema Cyber -->
     <div class="card bg-dark text-white p-4 text-center shadow-lg" style="width: 100%; max-width: 500px; border: 1px solid rgba(0, 160, 255, 0.3); box-shadow: 0 0 20px rgba(0, 160, 255, 0.1) !important;">
 
         <div class="mb-4">
-            <!-- Richiamo del logo -->
             <img src="~/Img/logo-onus.jpeg" alt="ONUS Logo" width="70" height="70" class="rounded-circle mb-3 border border-secondary shadow-sm">
-            <h2 class="text-gradient-onus fw-bold m-0 tracking-wide" style="letter-spacing: 1px;">REGISTRAZIONE COACH</h2>
+            <h2 class="text-gradient-onus fw-bold m-0 tracking-wide" style="letter-spacing: 1px;">COACH REGISTRATION</h2>
         </div>
 
         <form method="post">
             <div class="row g-3 text-start">
                 <div class="col-md-6 form-floating mb-3">
-                    <input asp-for="Input.Nome" class="form-control bg-black text-white border-secondary shadow-sm" placeholder="Nome" required />
-                    <label asp-for="Input.Nome" >Nome</label>
+                    <input asp-for="Input.Nome" class="form-control bg-black text-white border-secondary shadow-sm" placeholder="First Name" required />
+                    <label asp-for="Input.Nome">First Name</label>
                 </div>
                 <div class="col-md-6 form-floating mb-3">
-                    <input asp-for="Input.Cognome" class="form-control bg-black text-white border-secondary shadow-sm" placeholder="Cognome" required />
-                    <label asp-for="Input.Cognome" >Cognome</label>
+                    <input asp-for="Input.Cognome" class="form-control bg-black text-white border-secondary shadow-sm" placeholder="Last Name" required />
+                    <label asp-for="Input.Cognome">Last Name</label>
                 </div>
             </div>
 
             <div class="form-floating mb-3 text-start">
-                <input asp-for="Input.NomeSquadra" class="form-control bg-black text-white border-secondary shadow-sm" placeholder="Nome Squadra" required />
-                <label asp-for="Input.NomeSquadra" >Nome della Squadra</label>
-                <div class="form-text text-white-50 small mt-1 ms-1">Verrà creata una nuova squadra con questo nome.</div>
+                <input asp-for="Input.Email" type="email" class="form-control bg-black text-white border-secondary shadow-sm" placeholder="Email" required />
+                <label asp-for="Input.Email">Email Address</label>
+            </div>
+
+            <div class="form-floating mb-3 text-start">
+                <input asp-for="Input.NomeSquadra" class="form-control bg-black text-white border-secondary shadow-sm" placeholder="Team Name" required />
+                <label asp-for="Input.NomeSquadra">Team Name</label>
+                <div class="form-text text-white-50 small mt-1 ms-1">A new team will be created with this name.</div>
             </div>
 
             <div class="form-floating mb-4 text-start">
@@ -45,13 +48,13 @@
             }
 
             <button type="submit" class="btn btn-onus w-100 py-3 fw-bold fs-5 rounded-pill shadow-lg mt-2">
-                CREA ACCOUNT E SQUADRA <i class="bi bi-person-plus-fill ms-1"></i>
+                CREATE ACCOUNT AND TEAM <i class="bi bi-person-plus-fill ms-1"></i>
             </button>
 
             <div class="text-center mt-4 border-top border-secondary pt-3">
-                <p class="text-white-50 mb-2">Hai già una squadra su ONUS?</p>
+                <p class="text-white-50 mb-2">Already have a team on ONUS?</p>
                 <a href="/Login" class="fw-bold text-decoration-none d-inline-block" style="color: var(--onus-blue); transition: transform 0.2s;">
-                    ACCEDI ORA <i class="bi bi-arrow-right-circle ms-1"></i>
+                    LOGIN NOW <i class="bi bi-arrow-right-circle ms-1"></i>
                 </a>
             </div>
         </form>

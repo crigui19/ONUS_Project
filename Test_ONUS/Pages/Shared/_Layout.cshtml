@@ -3,7 +3,7 @@
 @inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
 
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -48,9 +48,9 @@
                         @if (Context.Session.GetString("Ruolo") == "Staff")
                         {
                             <li class="nav-item"><a class="nav-link" asp-page="/Dashboard">@Localizer["Dashboard"]</a></li>
-                            <li class="nav-item"><a class="nav-link" asp-page="/Analisi">@Localizer["Analisi"]</a></li>
-                            <li class="nav-item"><a class="nav-link" asp-page="/GestioneAtleti">@Localizer["Gestione rosa"]</a></li>
-                            <li class="nav-item"><a class="nav-link" asp-page="/GestioneParametri">@Localizer["Parametri"]</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-page="/Analisi">@Localizer["Analysis"]</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-page="/GestioneAtleti">@Localizer["Roster Management"]</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-page="/GestioneParametri">@Localizer["Parameters"]</a></li>
                         }
                     </ul>
 
@@ -58,7 +58,7 @@
                         <!-- PULSANTE INSTALLAZIONE PWA (Nuovo colore) -->
                         <li class="nav-item d-flex align-items-center me-3 d-none" id="installContainer">
                             <button id="btnInstall" class="btn btn-outline-onus btn-sm rounded-pill px-3 shadow-sm">
-                                <i class="bi bi-download me-1"></i> Installa App
+                                <i class="bi bi-download me-1"></i> Install App
                             </button>
                         </li>
 
@@ -68,13 +68,13 @@
                                 <button class="btn btn-dark border-secondary btn-sm rounded-pill px-3" data-bs-toggle="offcanvas" data-bs-target="#userSidebar">
                                     <i class="bi bi-person-circle me-1" style="color: #71d92d;"></i> @(Context.Session.GetString("NomeCompleto") ?? "User")
                                 </button>
-                                <a class="btn btn-onus btn-sm rounded-pill px-3" asp-page="/Login">@Localizer["ESCI"]</a>
+                                <a class="btn btn-onus btn-sm rounded-pill px-3" asp-page="/Login">@Localizer["LOGOUT"]</a>
                             </li>
                         }
                         else
                         {
                             <li class="nav-item"><a href="/Login" class="btn btn-onus btn-sm ms-2 rounded-pill">@Localizer["LOGIN"]</a></li>
-                            <li class="nav-item"><a class="btn btn-onus btn-sm ms-2 rounded-pill" asp-page="/Registrazione">REGISTRAZIONE</a></li>
+                            <li class="nav-item"><a class="btn btn-onus btn-sm ms-2 rounded-pill" asp-page="/Registrazione">REGISTER</a></li>
                         }
                     </ul>
                 </div>
@@ -93,7 +93,7 @@
         <div class="offcanvas offcanvas-end bg-dark text-white border-start border-secondary" tabindex="-1" id="userSidebar">
             <div class="offcanvas-header border-bottom border-secondary">
                 <h5 class="offcanvas-title fw-bold text-uppercase text-danger">
-                    <i class="bi bi-person-gear me-2"></i>@Localizer["Il Tuo Profilo"]
+                    <i class="bi bi-person-gear me-2"></i>@Localizer["Your Profile"]
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
             </div>
@@ -110,11 +110,11 @@
 
                     <div class="row g-2 mb-3">
                         <div class="col-6">
-                            <label class="form-label text-muted small text-uppercase">@Localizer["Nome"]</label>
+                            <label class="form-label text-muted small text-uppercase">@Localizer["Name"]</label>
                             <input type="text" name="Nome" class="form-control bg-black text-white border-secondary" value="@Context.Session.GetString("Nome")" required>
                         </div>
                         <div class="col-6">
-                            <label class="form-label text-muted small text-uppercase">@Localizer["Cognome"]</label>
+                            <label class="form-label text-muted small text-uppercase">@Localizer["Surname"]</label>
                             <input type="text" name="Cognome" class="form-control bg-black text-white border-secondary" value="@Context.Session.GetString("Cognome")" required>
                         </div>
                     </div>
@@ -123,11 +123,11 @@
                     {
                         <div class="row g-2 mb-3">
                             <div class="col-6">
-                                <label class="form-label text-warning small text-uppercase fw-bold">Altezza (cm)</label>
+                                <label class="form-label text-warning small text-uppercase fw-bold">Height (cm)</label>
                                 <input type="number" name="Altezza" class="form-control bg-black text-white border-warning" value="@Context.Session.GetInt32("Altezza")">
                             </div>
                             <div class="col-6">
-                                <label class="form-label text-warning small text-uppercase fw-bold">Peso (kg)</label>
+                                <label class="form-label text-warning small text-uppercase fw-bold">Weight (kg)</label>
                                 <input type="number" step="0.1" name="Peso" class="form-control bg-black text-white border-warning" value="@Context.Session.GetString("Peso")">
                             </div>
                         </div>
@@ -135,17 +135,17 @@
 
                     <div class="mb-3">
                         <button type="button" class="btn btn-sm btn-outline-secondary w-100 mb-2" onclick="toggleCambioPassword()">
-                            <i class="bi bi-key me-1"></i> @Localizer["Modifica Password"]
+                            <i class="bi bi-key me-1"></i> @Localizer["Change Password"]
                         </button>
                         <div id="boxNuovaPass" style="display: none;">
-                            <input type="password" name="NuovaPassword" class="form-control bg-black text-white border-warning" placeholder="Nuova password">
+                            <input type="password" name="NuovaPassword" class="form-control bg-black text-white border-warning" placeholder="New password">
                         </div>
                     </div>
 
                     <hr class="border-secondary my-4">
 
                     <div class="mb-4">
-                        <label class="form-label text-muted small text-uppercase">@Localizer["Lingua"]</label>
+                        <label class="form-label text-muted small text-uppercase">@Localizer["Language"]</label>
                         <div class="d-flex gap-2">
                             @{
                                 var requestCultureFeature = Context.Features.Get<IRequestCultureFeature>();
@@ -164,11 +164,11 @@
                     </div>
 
                     <div class="mb-3 bg-danger bg-opacity-10 p-3 rounded border border-danger border-opacity-25">
-                        <label class="form-label text-white small text-uppercase fw-bold">@Localizer["Password Attuale"]</label>
-                        <input type="password" name="PasswordAttuale" class="form-control bg-black text-white border-0 text-center" placeholder="Conferma per salvare" required>
+                        <label class="form-label text-white small text-uppercase fw-bold">@Localizer["Current Password"]</label>
+                        <input type="password" name="PasswordAttuale" class="form-control bg-black text-white border-0 text-center" placeholder="Confirm to save" required>
                     </div>
 
-                    <button type="submit" class="btn btn-danger w-100 fw-bold shadow">@Localizer["SALVA MODIFICHE"]</button>
+                    <button type="submit" class="btn btn-danger w-100 fw-bold shadow">@Localizer["SAVE CHANGES"]</button>
                 </form>
             </div>
         </div>
@@ -180,24 +180,24 @@
             <div class="modal-content bg-dark text-white border-secondary shadow-lg">
                 <div class="modal-header border-secondary">
                     <h5 class="modal-title text-warning fw-bold" id="iosInstallModalLabel">
-                        <i class="bi bi-apple me-2"></i>Installa su iOS
+                        <i class="bi bi-apple me-2"></i>Install on iOS
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-center py-4">
-                    <p class="mb-4">Per installare <strong>ONUS</strong> sul tuo iPhone o iPad e usarla come un'app nativa, segui questi passaggi:</p>
+                    <p class="mb-4">To install <strong>ONUS</strong> on your iPhone or iPad and use it as a native app, follow these steps:</p>
 
                     <div class="text-start d-inline-block">
                         <p class="mb-3">
-                            <strong>1.</strong> Tocca il tasto <strong>Condividi</strong> <i class="bi bi-box-arrow-up fs-4 text-info align-middle mx-1"></i> nella barra di Safari (in basso o in alto).
+                            <strong>1.</strong> Tap the <strong>Share</strong> button <i class="bi bi-box-arrow-up fs-4 text-info align-middle mx-1"></i> in the Safari bar (at the bottom or top).
                         </p>
                         <p class="mb-0">
-                            <strong>2.</strong> Scorri il menu in basso e tocca <strong>"Aggiungi alla schermata Home"</strong> <i class="bi bi-plus-square fs-5 text-light align-middle mx-1"></i>.
+                            <strong>2.</strong> Scroll down the menu and tap <strong>"Add to Home Screen"</strong> <i class="bi bi-plus-square fs-5 text-light align-middle mx-1"></i>.
                         </p>
                     </div>
                 </div>
                 <div class="modal-footer border-secondary">
-                    <button type="button" class="btn btn-secondary w-100 fw-bold" data-bs-dismiss="modal">Ho capito</button>
+                    <button type="button" class="btn btn-secondary w-100 fw-bold" data-bs-dismiss="modal">I got it</button>
                 </div>
             </div>
         </div>

@@ -11,7 +11,10 @@ namespace Test_ONUS.Models
         public required string Nome { get; set; }
         public required string Cognome { get; set; }
         public required string Password { get; set; }
-
+        // AGGIUNGI QUESTA RIGA:
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; }
         // Foreign Key per la Squadra
         public int SquadraId { get; set; }
 
