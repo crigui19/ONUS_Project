@@ -1,76 +1,50 @@
-﻿// Questo evento scatta quando il server C# manda una notifica
+﻿// 1. REQUISITO OBBLIGATORIO PWA: Evento Fetch
+// Questo evento è necessario per sbloccare il tasto "Installa" su Chrome/Android.
+self.addEventListener('fetch', function (event) {
+    // Lasciamo che la richiesta proceda normalmente tramite la rete
+    event.respondWith(fetch(event.request));
+});
+
+// 2. RICEZIONE NOTIFICHE PUSH
 self.addEventListener('push', function (event) {
-    let data = {};
-
-    // Controlliamo se ci sono dati nel messaggio
     if (event.data) {
-        data = event.data.json();
+        const dataText = event.data.text();
+
+        const options = {
+            body: dataText,
+            icon: '/Img/icon-192.png',
+            badge: '/Img/icon-192.png',
+            vibrate: [100, 50, 100], // Vibrazione del telefono
+            data: {
+                dateOfArrival: Date.now(),
+                primaryKey: '2'
+            }
+        };
+
+        // Mostra la notifica sul telefono/PC
+        event.waitUntil(
+            self.registration.showNotification('ONUS Alert', options)
+        );
     }
-
-    // Configura l'aspetto della notifica sul telefono
-    const title = data.titolo || "ONUS Athletes";
-    const options = {
-        body: data.messaggio || "Hai una nuova notifica dal tuo allenatore.",
-        icon: '/Img/icon-192.png', // L'icona della tua app
-        badge: '/Img/icon-192.png', // L'iconcina piccola nella barra di stato
-        vibrate: [200, 100, 200, 100, 200], // Vibrazione stile messaggio
-        data: {
-            url: data.url || '/' // Dove va se clicca la notifica
-        }
-    };
-
-    // Mostra la notifica sullo schermo!
-    event.waitUntil(
-        self.registration.showNotification(title, options)
-    );
 });
 
-// Cosa succede quando l'atleta tocca la notifica col dito
+// 3. CLICK SULLA NOTIFICA
 self.addEventListener('notificationclick', function (event) {
-    event.notification.close();
-    event.waitUntil(
-        clients.openWindow(event.notification.data.url)
-    );
-});
-
-// ==========================================
-// RICEZIONE DELLA NOTIFICA PUSH
-// ==========================================
-self.addEventListener('push', function (event) {
-    console.log('[Service Worker] Push Ricevuto!');
-
-    // Testo di default se il server non manda nulla
-    let testoNotifica = 'Ricordati di inserire i dati della sessione di oggi!';
-
-    // Se il server C# ci ha mandato un messaggio personalizzato, usiamo quello
-    if (event.data) {
-        testoNotifica = event.data.text();
-    }
-
-    const title = 'ONUS Athletes 🏀';
-    const options = {
-        body: testoNotifica,
-        icon: '/Img/icon-192.png', // L'icona che compare a fianco del messaggio
-        badge: '/Img/icon-192.png', // L'icona piccola in alto sulla barra di stato (Android)
-        vibrate: [200, 100, 200, 100, 200, 100, 200], // Fa vibrare il telefono!
-        requireInteraction: true // Su PC, la notifica non scompare finché non la chiudi
-    };
-
-    // Mostra la notifica di sistema sul telefono
-    event.waitUntil(self.registration.showNotification(title, options));
-});
-
-// ==========================================
-// AZIONE QUANDO L'ATLETA CLICCA SULLA NOTIFICA
-// ==========================================
-self.addEventListener('notificationclick', function (event) {
-    console.log('[Service Worker] L\'utente ha cliccato sulla notifica.');
-
-    // Chiude la tendina della notifica
+    // Chiude la notifica quando ci clicchi
     event.notification.close();
 
-    // Apre l'app direttamente sulla Dashboard
+    // Apre l'app o porta l'utente alla home
     event.waitUntil(
-        clients.openWindow('https://onusathletes.it/Dashboard')
+        clients.matchAll({ type: 'window' }).then(function (clientList) {
+            for (let i = 0; i < clientList.length; i++) {
+                let client = clientList[i];
+                if (client.url === '/' && 'focus' in client) {
+                    return client.focus();
+                }
+            }
+            if (clients.openWindow) {
+                return clients.openWindow('/');
+            }
+        })
     );
 });
