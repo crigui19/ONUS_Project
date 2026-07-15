@@ -4,70 +4,190 @@
     ViewData["Title"] = "Welcome";
 }
 
-<div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 text-center bg-dark text-white rounded-3 shadow-lg hero-section" style="border: 1px solid rgba(0, 160, 255, 0.3); box-shadow: 0 0 20px rgba(0, 160, 255, 0.15) !important;">
-    <div class="col-md-8 p-lg-5 mx-auto my-5">
-        <h1 class="display-3 fw-bold text-gradient-onus mb-3 tracking-wide">ONUS</h1>
-        <h3 class="fw-normal text-white-50 mb-4">Athlete Monitoring System</h3>
-        <p class="lead fw-normal mb-4">
-            The ultimate platform for internal and external load monitoring.
-            Optimize performance, prevent injuries, and manage your team with a single click.
-        </p>
+<style>
+    .hero-title {
+        font-size: 4rem;
+        font-weight: 900;
+        line-height: 1.1;
+        letter-spacing: -1px;
+    }
 
-        <div class="d-flex gap-3 justify-content-center lead fw-normal">
-            <a class="btn btn-onus btn-lg px-4 py-3 fw-bold shadow-lg" href="/Login">
-                LOGIN TO APP
-            </a>
-            <a href="/Registrazione" class="btn btn-onus btn-lg px-4 py-3 fw-bold shadow-lg">
-                REGISTER TEAM
-            </a>
+    .hero-subtitle {
+        font-size: 1.25rem;
+        color: rgba(255, 255, 255, 0.7);
+        font-weight: 300;
+    }
+
+    .stat-box {
+        background-color: #1a1a1a;
+        border: 1px solid rgba(0, 160, 255, 0.2);
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: transform 0.3s ease;
+    }
+
+        .stat-box:hover {
+            transform: translateY(-5px);
+            border-color: var(--onus-green);
+        }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 900;
+        color: white;
+        margin: 0;
+        line-height: 1;
+    }
+
+    .feature-card {
+        background: linear-gradient(145deg, #1a1a1a 0%, #111 100%);
+        border: 1px solid #333;
+        border-radius: 15px;
+        padding: 2rem;
+        height: 100%;
+        transition: all 0.3s ease;
+    }
+
+        .feature-card:hover {
+            border-color: var(--onus-blue);
+            box-shadow: 0 10px 30px rgba(0, 160, 255, 0.1);
+        }
+
+    .feature-icon-wrapper {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        background-color: rgba(0, 160, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+    }
+
+        .feature-icon-wrapper i {
+            font-size: 1.8rem;
+            color: var(--onus-blue);
+        }
+
+    @@media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.5rem;
+        }
+    }
+</style>
+
+<div class="container pt-5 pb-4 mt-md-4">
+    <div class="row align-items-center g-5">
+        <!-- Colonna Testo Sinistra -->
+        <div class="col-lg-6">
+            <h1 class="hero-title text-white mb-4">
+                WORK SMARTER.<br />
+                <span class="text-gradient-onus">TRAIN BETTER.</span><br />
+                BUILD LEGACY.
+            </h1>
+
+            <p class="fs-4 fw-bold text-white mb-3">
+                You're probably doing a great job with athletes... ALREADY.
+            </p>
+
+            <div class="hero-subtitle mb-5">
+                <p class="mb-3">We created ONUS to help you reach higher standards without wasting time and costly resources.</p>
+                <p class="mb-0">ONUS is a simplifier, just this. No tricks, no thoughts, just a smart companion for your career.</p>
+            </div>
+
+            <div class="d-flex gap-3 flex-wrap">
+                <a class="btn btn-onus btn-lg px-5 py-3 fw-bold rounded-pill shadow-lg text-uppercase" style="letter-spacing: 1px;" href="/Login">
+                    Login <i class="bi bi-arrow-right ms-2"></i>
+                </a>
+                <a class="btn btn-outline-light btn-lg px-5 py-3 fw-bold rounded-pill text-uppercase" style="letter-spacing: 1px;" href="/Registrazione">
+                    Register
+                </a>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="position-relative p-4 rounded-4" style="background: radial-gradient(circle at center, rgba(0,160,255,0.1) 0%, transparent 70%);">
+                <!-- Mockup/Astratto che richiama la dashboard e i numeri del PDF -->
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="stat-box mt-md-5">
+                            <h3 class="stat-number text-gradient-onus">523</h3>
+                            <p class="text-white-50 small text-uppercase mt-2 mb-0 fw-bold">Sessions Logged</p>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-box">
+                            <h3 class="stat-number">16</h3>
+                            <p class="text-white-50 small text-uppercase mt-2 mb-0 fw-bold">Active Players</p>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-box">
+                            <h3 class="stat-number" style="color: var(--onus-green);">24</h3>
+                            <p class="text-white-50 small text-uppercase mt-2 mb-0 fw-bold">Metrics Monitored</p>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-box mt-md-n5">
+                            <h3 class="stat-number">450</h3>
+                            <p class="text-white-50 small text-uppercase mt-2 mb-0 fw-bold">Reports Generated</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    <div class="product-device shadow-sm d-none d-md-block"></div>
-    <div class="product-device product-device-2 shadow-sm d-none d-md-block"></div>
 </div>
 
-<div id="features" class="container px-4 py-5">
-    <h2 class="pb-2 border-bottom border-secondary text-white"><span class="text-gradient-onus">Our</span> Services</h2>
+<div id="why-onus" class="container py-5 mt-5 border-top border-secondary">
+    <div class="text-center mb-5">
+        <h2 class="display-5 fw-bold text-white mb-2">Why <span class="text-gradient-onus">ONUS</span></h2>
+        <div style="width: 60px; height: 4px; background: var(--onus-blue); margin: 0 auto; border-radius: 2px;"></div>
+    </div>
 
-    <div class="row g-4 py-5 row-cols-1 row-cols-lg-3">
-        <div class="col">
-            <div class="feature-box p-4 h-100 rounded-3 bg-dark border border-secondary shadow-sm">
-                <div class="feature-icon d-inline-flex align-items-center justify-content-center fs-2 mb-3 rounded-3 p-3 shadow" style="background: linear-gradient(135deg, var(--onus-green), var(--onus-blue)); color: #121212;">
-                    ⚡
+    <div class="row g-4">
+        <!-- Feature 1 -->
+        <div class="col-md-4">
+            <div class="feature-card">
+                <div class="feature-icon-wrapper">
+                    <i class="bi bi-journal-text"></i>
                 </div>
-                <h3 class="text-white">Quick Input</h3>
-                <p class="text-white-50">"Tap & Go" interface optimized for players. Enter RPE, Sleep, and Wellness data in under 5 seconds.</p>
+                <h4 class="text-white fw-bold mb-3">EVIDENCE BASED</h4>
+                <p class="text-white-50 small" style="line-height: 1.6;">
+                    Our 3 main metrics are based on thousands of validated scientific studies.<br><br>
+                    All you need to do is to set up your team once you purchase ONUS and start to collect the data. Make it easy.
+                </p>
             </div>
         </div>
 
-        <div class="col">
-            <div class="feature-box p-4 h-100 rounded-3 bg-dark border border-secondary shadow-sm">
-                <div class="feature-icon d-inline-flex align-items-center justify-content-center fs-2 mb-3 rounded-3 p-3 shadow" style="background: linear-gradient(135deg, var(--onus-blue), var(--onus-green)); color: #121212;">
-                    📈
+        <!-- Feature 2 -->
+        <div class="col-md-4">
+            <div class="feature-card">
+                <div class="feature-icon-wrapper" style="background-color: rgba(113, 217, 45, 0.1);">
+                    <i class="bi bi-bell-fill" style="color: var(--onus-green);"></i>
                 </div>
-                <h3 class="text-white">A.C.W.R. Analysis</h3>
-                <p class="text-white-50">Automatic algorithm for calculating the Acute:Chronic ratio. View load trends and prevent overtraining.</p>
+                <h4 class="text-white fw-bold mb-3">SMART NOTIFICATIONS</h4>
+                <p class="text-white-50 small" style="line-height: 1.6;">
+                    With ONUS you can quickly send a notification to your team and let them open their dashboard to insert the individual data of the practice.<br><br>
+                    "READ, CLICK, CHOOSE, SAVE".<br>
+                    ONUS is planned to be simple. Once you get inside the app and set up your team, you just have to check the numbers and analyze the trend.
+                </p>
             </div>
         </div>
 
-        <div class="col">
-            <div class="feature-box p-4 h-100 rounded-3 bg-dark border border-secondary shadow-sm">
-                <div class="feature-icon d-inline-flex align-items-center justify-content-center fs-2 mb-3 rounded-3 p-3 shadow" style="background: linear-gradient(135deg, var(--onus-green), var(--onus-blue)); color: #121212;">
-                    📋
+        <!-- Feature 3 -->
+        <div class="col-md-4">
+            <div class="feature-card">
+                <div class="feature-icon-wrapper" style="background-color: rgba(255, 193, 7, 0.1);">
+                    <i class="bi bi-file-earmark-bar-graph-fill" style="color: #ffc107;"></i>
                 </div>
-                <h3 class="text-white">Roster Management</h3>
-                <p class="text-white-50">Complete control panel for the coaching staff. Manage profiles, photos, and monitor the physical status of the entire team.</p>
+                <h4 class="text-white fw-bold mb-3">QUICK REPORT</h4>
+                <p class="text-white-50 small" style="line-height: 1.6;">
+                    Sharing useful data among the coaching staff could be an issue sometimes.<br><br>
+                    With ONUS you can easily choose what you want to export and download the report in pdf.
+                </p>
             </div>
         </div>
     </div>
-</div>
-
-<div class="container">
-    <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top border-secondary">
-        <p class="col-md-4 mb-0 text-white-50">&copy; 2026 ONUS Performance</p>
-
-        <ul class="nav col-md-4 justify-content-end">
-            <li class="nav-item"><a href="#" class="nav-link px-2 text-white-50">Support</a></li>
-        </ul>
-    </footer>
 </div>
