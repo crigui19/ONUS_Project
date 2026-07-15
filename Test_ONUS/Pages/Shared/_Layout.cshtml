@@ -11,6 +11,8 @@
 
     <link rel="manifest" href="~/manifest.json">
     <meta name="theme-color" content="#00a0ff">
+    <!-- Risolto il warning deprecato qui sotto: -->
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="ONUS">
@@ -51,6 +53,7 @@
                     </ul>
 
                     <ul class="navbar-nav">
+                        <!-- IL PULSANTE PARTE NASCOSTO (d-none) -->
                         <li class="nav-item d-flex align-items-center me-3 d-none" id="installContainer">
                             <button id="btnInstall" class="btn btn-outline-onus btn-sm rounded-pill px-3 shadow-sm">
                                 <i class="bi bi-download me-1"></i> Install App
@@ -215,8 +218,8 @@
         if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
         navigator.serviceWorker.register('/service-worker.js')
-        .then(reg => console.log('PWA: Service Worker Registered'))
-        .catch(err => console.log('PWA: SW Error', err));
+        .then(reg => console.log('PWA: Service Worker Registered successfully', reg))
+        .catch(err => console.error('PWA: SW Error during registration', err));
         });
         }
 
@@ -236,11 +239,19 @@
 
         const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone) || window.matchMedia('(display-mode: standalone)').matches;
 
+        // LOG DI DEBUG PER CAPIRE COSA SUCCEDE
+        console.log("PWA Check: Is iOS? ", isIos());
+        console.log("PWA Check: Is Standalone? ", isInStandaloneMode());
+
         if (isIos() && !isInStandaloneMode()) {
+        console.log("PWA Check: iOS user detected. Showing custom install button.");
         installContainer.classList.remove('d-none');
         }
 
+        // Questo è l'evento CHIAVE per Android e PC.
+        // Se non scatta, Chrome ha bloccato l'installazione.
         window.addEventListener('beforeinstallprompt', (e) => {
+        console.log("PWA Check: 'beforeinstallprompt' FIRED! The browser allows installation.");
         e.preventDefault();
         deferredPrompt = e;
         installContainer.classList.remove('d-none');
