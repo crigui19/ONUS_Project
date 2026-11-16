@@ -8,21 +8,25 @@ namespace Test_ONUS.Models
         [Key]
         public int Id { get; set; }
 
-        public required string Nome { get; set; }
-        public required string Cognome { get; set; }
-        public required string Password { get; set; }
-        // AGGIUNGI QUESTA RIGA:
+        [Required]
+        public string Nome { get; set; } = string.Empty;
+
+        [Required]
+        public string Cognome { get; set; } = string.Empty;
+
+        public string? Password { get; set; }
+        public string? GoogleId { get; set; }
+
         [Required]
         [EmailAddress]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
 
-        // Nuovi campi per il recupero password
         public string? ResetToken { get; set; }
         public DateTime? ResetTokenScadenza { get; set; }
-        // Foreign Key per la Squadra
+
         public int SquadraId { get; set; }
 
         [ForeignKey("SquadraId")]
-        public required Squadra Squadra { get; set; }
+        public Squadra Squadra { get; set; } = null!;
     }
 }

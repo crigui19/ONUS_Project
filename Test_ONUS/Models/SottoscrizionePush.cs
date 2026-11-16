@@ -7,16 +7,16 @@ namespace Test_ONUS.Models
         [Key]
         public int Id { get; set; }
 
-        // Colleghiamo il dispositivo all'atleta
         public int AtletaId { get; set; }
-        public Atleta Atleta { get; set; }
+        public Atleta Atleta { get; set; } = null!;
 
-        // I 3 dati fondamentali che ci darà il browser per rintracciare il telefono
         [Required]
-        public string Endpoint { get; set; }
+        public string Endpoint { get; set; } = string.Empty;
+
         [Required]
-        public string P256dh { get; set; }
+        public string P256dh { get; set; } = string.Empty;
+
         [Required]
-        public string Auth { get; set; }
+        public string Auth { get; set; } = string.Empty;
     }
 }

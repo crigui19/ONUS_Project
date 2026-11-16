@@ -1,10 +1,11 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
-using System;
 using System.Net;
 using System.Net.Mail;
-using System.Threading.Tasks;
+using System.Security.Cryptography;
+using System.Text;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
 using Test_ONUS.Data;
 
 namespace Test_ONUS.Pages
@@ -12,10 +13,17 @@ namespace Test_ONUS.Pages
     public class RecuperoPasswordModel : PageModel
     {
         private readonly ApplicationDbContext _context;
+        private readonly IConfiguration _configuration;
+        private readonly ILogger<RecuperoPasswordModel> _logger;
 
-        public RecuperoPasswordModel(ApplicationDbContext context)
+        public RecuperoPasswordModel(
+            ApplicationDbContext context,
+            IConfiguration configuration,
+            ILogger<RecuperoPasswordModel> logger)
         {
             _context = context;
+            _configuration = configuration;
+            _logger = logger;
         }
 
         [BindProperty]
@@ -28,63 +36,77 @@ namespace Test_ONUS.Pages
 
         public async Task<IActionResult> OnPostAsync()
         {
-            if (string.IsNullOrEmpty(Email))
+            if (string.IsNullOrWhiteSpace(Email))
             {
-                Message = "Please enter an email address.";
+                Message = "Inserisci un indirizzo email valido.";
                 return Page();
             }
 
-            // Cerca il coach nel database tramite la mail
-            var coach = await _context.PreparatoriAtletici.FirstOrDefaultAsync(p => p.Email.ToLower() == Email.ToLower());
+            var emailNormalizzata = Email.Trim().ToLower();
+            var coach = await _context.PreparatoriAtletici
+                .FirstOrDefaultAsync(p => p.Email.ToLower() == emailNormalizzata);
 
             if (coach != null)
             {
-                // Genera un token sicuro e imposta la scadenza a 1 ora
-                coach.ResetToken = Guid.NewGuid().ToString();
+                // Genera un token crittograficamente sicuro (256 bit)
+                var rawTokenBytes = RandomNumberGenerator.GetBytes(32);
+                var rawToken = WebEncoders.Base64UrlEncode(rawTokenBytes);
+
+                // Salva nel DB solo l'hash SHA-256 del token
+                var tokenHash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(rawToken)));
+
+                coach.ResetToken = tokenHash;
                 coach.ResetTokenScadenza = DateTime.UtcNow.AddHours(1);
                 await _context.SaveChangesAsync();
 
-                // Genera il link assoluto da inviare via mail
-                var resetLink = Url.Page("/ResetPassword", null, new { token = coach.ResetToken }, Request.Scheme);
+                var resetLink = Url.Page("/ResetPassword", null, new { token = rawToken }, Request.Scheme);
 
                 try
                 {
-                    /* CONFIGURAZIONE GMAIL SMTP */
-                    using (var client = new SmtpClient("smtp.gmail.com", 587))
+                    var smtpHost = _configuration["EmailSettings:SmtpHost"] ?? "smtp.gmail.com";
+                    var smtpPort = int.TryParse(_configuration["EmailSettings:SmtpPort"], out var port) ? port : 587;
+                    var senderEmail = _configuration["EmailSettings:SenderEmail"];
+                    var senderName = _configuration["EmailSettings:SenderName"] ?? "ONUS Support";
+                    var smtpPassword = _configuration["EmailSettings:SmtpPassword"];
+
+                    if (string.IsNullOrWhiteSpace(senderEmail) || string.IsNullOrWhiteSpace(smtpPassword))
                     {
-                        client.EnableSsl = true;
-
-                        // INSERISCI QUI LA TUA MAIL E LA TUA PASSWORD PER LE APP DA 16 CARATTERI (Senza spazi)
-                        client.Credentials = new NetworkCredential("criguidolin@gmail.com", "nwxc nraf kkbi mzjb");
-
-                        var mailMessage = new MailMessage
-                        {
-                            From = new MailAddress("criguidolin@gmail.com", "ONUS Support"),
-                            Subject = "ONUS - Password Reset",
-                            Body = $"<div style='font-family: Arial, sans-serif; padding: 20px; background-color: #1a1a1a; color: white; text-align: center;'>" +
-                                   $"<h2 style='color: #00a0ff;'>Password Reset Request</h2>" +
-                                   $"<p>Click the button below to choose a new password. This link is valid for 1 hour.</p>" +
-                                   $"<a href='{resetLink}' style='background-color: #00a0ff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 50px; display: inline-block; margin-top: 15px; font-weight: bold;'>RESET PASSWORD</a>" +
-                                   $"</div>",
-                            IsBodyHtml = true
-                        };
-
-                        mailMessage.To.Add(coach.Email);
-                        await client.SendMailAsync(mailMessage);
+                        _logger.LogError("Configurazione SMTP mancante in EmailSettings.");
+                        Message = "Servizio email temporaneamente non disponibile. Riprova più tardi.";
+                        return Page();
                     }
+
+                    using var client = new SmtpClient(smtpHost, smtpPort)
+                    {
+                        EnableSsl = true,
+                        Credentials = new NetworkCredential(senderEmail, smtpPassword)
+                    };
+
+                    using var mailMessage = new MailMessage
+                    {
+                        From = new MailAddress(senderEmail, senderName),
+                        Subject = "ONUS - Reimpostazione Password",
+                        Body = $"<div style='font-family: Arial, sans-serif; padding: 20px; background-color: #1a1a1a; color: white; text-align: center;'>" +
+                               $"<h2 style='color: #00a0ff;'>Richiesta Reset Password</h2>" +
+                               $"<p>Clicca sul pulsante qui sotto per scegliere una nuova password. Il link è valido per 1 ora.</p>" +
+                               $"<a href='{resetLink}' style='background-color: #00a0ff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 50px; display: inline-block; margin-top: 15px; font-weight: bold;'>REIMPOSTA PASSWORD</a>" +
+                               $"</div>",
+                        IsBodyHtml = true
+                    };
+
+                    mailMessage.To.Add(coach.Email);
+                    await client.SendMailAsync(mailMessage);
                 }
                 catch (Exception ex)
                 {
-                    // Se l'SMTP non è configurato, per ora logghiamo l'errore o lo mostriamo (in produzione rimuovere ex.Message)
-                    Message = "Error sending email. Check SMTP settings. System error: " + ex.Message;
+                    _logger.LogError(ex, "Errore durante l'invio dell'email di reset password a {Email}", coach.Email);
+                    Message = "Si è verificato un errore durante l'invio dell'email. Riprova più tardi.";
                     return Page();
                 }
             }
 
-            // Mostriamo sempre lo stesso messaggio per motivi di sicurezza (per non rivelare quali email sono registrate)
             IsSuccess = true;
-            Message = "If the email is registered, you will receive a reset link shortly.";
-
+            Message = "Se l'indirizzo email è registrato, riceverai a breve un link per reimpostare la password.";
             return Page();
         }
     }

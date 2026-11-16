@@ -1,10 +1,7 @@
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.DataProtection;
 using Test_ONUS.Data;
-using System.Linq;
-using System;
-using Microsoft.AspNetCore.Http;
 
 namespace Test_ONUS.Pages
 {
@@ -35,11 +32,23 @@ namespace Test_ONUS.Pages
 
         public IActionResult OnPost()
         {
+            var cleanUsername = (Username ?? string.Empty).Trim();
+
+            if (string.IsNullOrWhiteSpace(cleanUsername) || string.IsNullOrWhiteSpace(Password))
+            {
+                ErrorMsg = "Inserisci username e password.";
+                return Page();
+            }
+
+            var normalizedUser = cleanUsername.ToLower();
+
             // 1. Cerca tra i Preparatori
             var preparatore = _context.PreparatoriAtletici
-                .FirstOrDefault(p => p.Email == Username || (p.Nome.ToLower() + p.Cognome.ToLower()) == Username.ToLower());
+                .FirstOrDefault(p => p.Email.ToLower() == normalizedUser
+                                  || (p.Nome.ToLower() + p.Cognome.ToLower()) == normalizedUser);
 
-            if (preparatore != null && BCrypt.Net.BCrypt.Verify(Password, preparatore.Password))
+            if (preparatore != null && !string.IsNullOrEmpty(preparatore.Password)
+                && BCrypt.Net.BCrypt.Verify(Password, preparatore.Password))
             {
                 ImpostaSessioneECookie(preparatore.Id, "Staff", preparatore.Nome, preparatore.Cognome, preparatore.SquadraId);
                 return RedirectToPage("/Dashboard");
@@ -47,40 +56,71 @@ namespace Test_ONUS.Pages
 
             // 2. Cerca tra gli Atleti
             var atleta = _context.Atleti
-                .FirstOrDefault(a => (a.Nome.ToLower() + a.Cognome.ToLower()) == Username.ToLower() && a.Password == Password);
+                .FirstOrDefault(a => (a.Nome.ToLower() + a.Cognome.ToLower()) == normalizedUser);
 
-            if (atleta != null)
+            if (atleta != null && !string.IsNullOrEmpty(atleta.Password))
             {
-                ImpostaSessioneECookie(atleta.Id, "Atleta", atleta.Nome, atleta.Cognome, atleta.SquadraId);
-                return RedirectToPage("/Analisi");
+                bool passwordValida;
+
+                // Se è già un hash BCrypt (inizia con $2a$, $2b$ o $2y$), verifica con BCrypt
+                if (atleta.Password.StartsWith("$2"))
+                {
+                    passwordValida = BCrypt.Net.BCrypt.Verify(Password, atleta.Password);
+                }
+                else
+                {
+                    // Compatibilità retroattiva: verifica vecchia password in chiaro e aggiornala subito a BCrypt
+                    passwordValida = (atleta.Password == Password);
+                    if (passwordValida)
+                    {
+                        atleta.Password = BCrypt.Net.BCrypt.HashPassword(Password);
+                        _context.SaveChanges();
+                    }
+                }
+
+                if (passwordValida)
+                {
+                    ImpostaSessioneECookie(atleta.Id, "Atleta", atleta.Nome, atleta.Cognome, atleta.SquadraId);
+                    return RedirectToPage("/Analisi");
+                }
             }
 
-            ErrorMsg = "Invalid Username or Password.";
+            ErrorMsg = "Username o password non validi.";
             return Page();
         }
 
-        private void ImpostaSessioneECookie(int id, string role, string nome, string cognome, int squadraId)
+        private void ImpostaSessioneECookie(int id, string role, string nome, string cognome, int? squadraId)
         {
-            // Imposta Sessione ("Ruolo" resta in italiano perché usato nel Layout per i permessi)
             HttpContext.Session.SetInt32("UserId", id);
             HttpContext.Session.SetString("Ruolo", role);
             HttpContext.Session.SetString("Nome", nome);
             HttpContext.Session.SetString("Cognome", cognome);
             HttpContext.Session.SetString("NomeCompleto", $"{nome} {cognome}");
-            HttpContext.Session.SetInt32("SquadraId", squadraId);
 
-            // Crea Cookie Persistente e Sicuro per la funzionalità "Remember Me"
-            var encryptedId = _protector.Protect(id.ToString());
+            if (squadraId.HasValue)
+            {
+                HttpContext.Session.SetInt32("SquadraId", squadraId.Value);
+            }
+
+            // Formato allineato con Program.cs: "Ruolo:Id"
+            var encryptedPayload = _protector.Protect($"{role}:{id}");
 
             var cookieOptions = new CookieOptions
             {
-                Expires = DateTime.UtcNow.AddDays(60), // 60 giorni di validità
+                Expires = DateTime.UtcNow.AddDays(60),
                 HttpOnly = true,
                 IsEssential = true,
-                Secure = true
+                Secure = Request.IsHttps,
+                SameSite = SameSiteMode.Lax
             };
 
-            Response.Cookies.Append("OnusAuth", encryptedId, cookieOptions);
+            Response.Cookies.Append("OnusAuth", encryptedPayload, cookieOptions);
+        }
+        public IActionResult OnPostLogout()
+        {
+            HttpContext.Session.Clear();
+            Response.Cookies.Delete("OnusAuth");
+            return RedirectToPage("/Login");
         }
     }
 }

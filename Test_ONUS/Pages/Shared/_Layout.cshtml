@@ -50,6 +50,12 @@
                             <li class="nav-item"><a class="nav-link" asp-page="/GestioneAtleti">@Localizer["Roster Management"]</a></li>
                             <li class="nav-item"><a class="nav-link" asp-page="/GestioneParametri">@Localizer["Parameters"]</a></li>
                         }
+                        else if (Context.Session.GetString("Ruolo") == "Atleta")
+                        {
+                            <li class="nav-item"><a class="nav-link" asp-page="/Dashboard">@Localizer["Dashboard"]</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-page="/Analisi">@Localizer["Analysis"]</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-page="/Report">Report</a></li>
+                        }
                     </ul>
 
                     <ul class="navbar-nav">
@@ -63,10 +69,12 @@
                         @if (Context.Session.GetInt32("UserId") != null)
                         {
                             <li class="nav-item d-flex align-items-center gap-2">
-                                <button class="btn btn-dark border-secondary btn-sm rounded-pill px-3" data-bs-toggle="offcanvas" data-bs-target="#userSidebar">
+                                <button type="button" class="btn btn-dark border-secondary btn-sm rounded-pill px-3" data-bs-toggle="offcanvas" data-bs-target="#userSidebar">
                                     <i class="bi bi-person-circle me-1" style="color: #71d92d;"></i> @(Context.Session.GetString("NomeCompleto") ?? "User")
                                 </button>
-                                <a class="btn btn-onus btn-sm rounded-pill px-3" asp-page="/Login">@Localizer["LOGOUT"]</a>
+                                <form method="post" asp-page="/Login" asp-page-handler="Logout" class="d-inline m-0">
+                                    <button type="submit" class="btn btn-onus btn-sm rounded-pill px-3">@Localizer["LOGOUT"]</button>
+                                </form>
                             </li>
                         }
                         else
@@ -278,6 +286,7 @@
         console.log('Installation complete!');
         });
     </script>
+
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

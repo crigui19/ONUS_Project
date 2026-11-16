@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Test_ONUS.Data;
-using Test_ONUS.Models;
- // Cambia "TuoProgetto" col nome reale (forse Test_ONUS.Models)
 
-namespace TuoProgetto.Controllers
+namespace Test_ONUS.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -12,52 +10,179 @@ namespace TuoProgetto.Controllers
     {
         private readonly ApplicationDbContext _context;
 
-        // Chiediamo a .NET di passarci il database (Dependency Injection)
         public AtletiController(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        // Questo metodo risponderà quando Next.js farà una richiesta GET a /api/atleti
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Atleta>>> GetAtleti()
+        // GET: api/atleti/squadra/5
+        [HttpGet("squadra/{squadraId}")]
+        public async Task<IActionResult> GetAtletiDiSquadra(int squadraId)
         {
-            // Peschiamo tutti gli atleti dal tuo database SQL Server e li restituiamo
-            return await _context.Atleti.ToListAsync();
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var ruolo = HttpContext.Session.GetString("Ruolo");
+            var userSquadraId = HttpContext.Session.GetInt32("SquadraId");
+
+            if (userId == null)
+                return Unauthorized();
+
+            // Solo lo Staff della stessa squadra può scaricare l'intera rosa
+            if (ruolo != "Staff" || userSquadraId != squadraId)
+                return Forbid();
+
+            var atleti = await _context.Atleti
+                .AsNoTracking()
+                .Where(a => a.SquadraId == squadraId)
+                .OrderBy(a => a.Cognome)
+                .ThenBy(a => a.Nome)
+                .Select(a => new AtletaDto
+                {
+                    Id = a.Id,
+                    Nome = a.Nome,
+                    Cognome = a.Cognome,
+                    SquadraId = a.SquadraId,
+                    Altezza = a.Altezza,
+                    Peso = a.Peso,
+                    IsAttivo = a.IsAttivo,
+                    IsInfortunato = a.IsInfortunato,
+                    IsInRiabilitazione = a.IsInRiabilitazione,
+                    DescrizioneInfortunio = a.DescrizioneInfortunio,
+                    FotoUrl = a.FotoUrl
+                })
+                .ToListAsync();
+
+            return Ok(atleti);
         }
 
-        // Questo metodo risponderà a richieste come: /api/atleti/1 (per LeBron)
+        // GET: api/atleti/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Atleta>> GetAtleta(int id)
+        public async Task<IActionResult> GetAtleta(int id)
         {
-            // Cerca l'atleta nel database tramite l'ID
-            var atleta = await _context.Atleti.FindAsync(id);
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var ruolo = HttpContext.Session.GetString("Ruolo");
+            var userSquadraId = HttpContext.Session.GetInt32("SquadraId");
+
+            if (userId == null)
+                return Unauthorized();
+
+            var atleta = await _context.Atleti
+                .AsNoTracking()
+                .FirstOrDefaultAsync(a => a.Id == id);
 
             if (atleta == null)
-            {
-                return NotFound(); // Restituisce un errore 404 se non esiste
-            }
+                return NotFound();
 
-            return atleta;
+            // Autorizzazione: l'atleta stesso oppure uno Staff della sua stessa squadra
+            bool autorizzato = (ruolo == "Atleta" && userId == atleta.Id)
+                            || (ruolo == "Staff" && userSquadraId.HasValue && atleta.SquadraId == userSquadraId.Value);
+
+            if (!autorizzato)
+                return Forbid();
+
+            return Ok(new AtletaDto
+            {
+                Id = atleta.Id,
+                Nome = atleta.Nome,
+                Cognome = atleta.Cognome,
+                SquadraId = atleta.SquadraId,
+                Altezza = atleta.Altezza,
+                Peso = atleta.Peso,
+                IsAttivo = atleta.IsAttivo,
+                IsInfortunato = atleta.IsInfortunato,
+                IsInRiabilitazione = atleta.IsInRiabilitazione,
+                DescrizioneInfortunio = atleta.DescrizioneInfortunio,
+                FotoUrl = atleta.FotoUrl
+            });
         }
 
         // GET: api/atleti/5/sessioni
         [HttpGet("{id}/sessioni")]
-        public async Task<ActionResult<IEnumerable<SessioneAllenamento>>> GetSessioniAtleta(int id)
+        public async Task<IActionResult> GetSessioniAtleta(int id)
         {
-            // Cerca tutte le sessioni che appartengono a questo AtletaId
-            // Le ordiniamo per Data decrescente (dalla più recente alla più vecchia)
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var ruolo = HttpContext.Session.GetString("Ruolo");
+            var userSquadraId = HttpContext.Session.GetInt32("SquadraId");
+
+            if (userId == null)
+                return Unauthorized();
+
+            var atleta = await _context.Atleti
+                .AsNoTracking()
+                .Select(a => new { a.Id, a.SquadraId })
+                .FirstOrDefaultAsync(a => a.Id == id);
+
+            if (atleta == null)
+                return NotFound();
+
+            bool autorizzato = (ruolo == "Atleta" && userId == atleta.Id)
+                            || (ruolo == "Staff" && userSquadraId.HasValue && atleta.SquadraId == userSquadraId.Value);
+
+            if (!autorizzato)
+                return Forbid();
+
             var sessioni = await _context.Sessioni
+                .AsNoTracking()
                 .Where(s => s.AtletaId == id)
+                .Include(s => s.Valori)
+                    .ThenInclude(v => v.Parametro)
                 .OrderByDescending(s => s.Data)
+                .Select(s => new SessioneDto
+                {
+                    Id = s.Id,
+                    AtletaId = s.AtletaId,
+                    Data = s.Data,
+                    DurataTotaleMinuti = s.DurataTotaleMinuti,
+                    TempoEffettivoMinuti = s.TempoEffettivoMinuti,
+                    Note = s.Note,
+                    CaricoCalcolato = (s.Valori
+                        .Where(v => v.Parametro != null && v.Parametro.IsCalcoloCarico)
+                        .Select(v => (int?)v.Valore)
+                        .FirstOrDefault() ?? 0) * s.DurataTotaleMinuti,
+                    Valori = s.Valori.Select(v => new ValoreParametroDto
+                    {
+                        ParametroId = v.ParametroId,
+                        NomeParametro = v.Parametro != null ? v.Parametro.Nome : string.Empty,
+                        Valore = v.Valore
+                    }).ToList()
+                })
                 .ToListAsync();
 
-            if (sessioni == null)
-            {
-                return NotFound();
-            }
+            return Ok(sessioni);
+        }
 
-            return sessioni;
+        // DTO sicuri (escludono Password e riferimenti circolari)
+        public class AtletaDto
+        {
+            public int Id { get; set; }
+            public string Nome { get; set; } = string.Empty;
+            public string Cognome { get; set; } = string.Empty;
+            public int? SquadraId { get; set; }
+            public int Altezza { get; set; }
+            public double Peso { get; set; }
+            public bool IsAttivo { get; set; }
+            public bool IsInfortunato { get; set; }
+            public bool IsInRiabilitazione { get; set; }
+            public string? DescrizioneInfortunio { get; set; }
+            public string FotoUrl { get; set; } = string.Empty;
+        }
+
+        public class SessioneDto
+        {
+            public int Id { get; set; }
+            public int AtletaId { get; set; }
+            public DateTime Data { get; set; }
+            public int DurataTotaleMinuti { get; set; }
+            public int TempoEffettivoMinuti { get; set; }
+            public string? Note { get; set; }
+            public int CaricoCalcolato { get; set; }
+            public List<ValoreParametroDto> Valori { get; set; } = new();
+        }
+
+        public class ValoreParametroDto
+        {
+            public int ParametroId { get; set; }
+            public string NomeParametro { get; set; } = string.Empty;
+            public int Valore { get; set; }
         }
     }
 }

@@ -92,7 +92,12 @@
 
                     @foreach (var param in Model.ParametriDashboard)
                     {
-                        <input type="hidden" id="val_@param.Id" name="ValoriParametri[@param.Id]" data-is-rpe="@param.IsCalcoloCarico.ToString().ToLower()" />
+                        <input type="hidden"
+                               id="val_@param.Id"
+                               name="ValoriParametri[@param.Id]"
+                               data-is-rpe="@param.IsCalcoloCarico.ToString().ToLower()"
+                               data-min="@param.ValoreMinimo"
+                               data-max="@param.ValoreMassimo" />
                     }
 
                     <div class="row g-4">
@@ -255,22 +260,26 @@
     }
 
     function digita(num) {
-        if(currentParamId === null) return;
+        if (currentParamId === null) return;
         let hiddenInput = document.getElementById('val_' + currentParamId);
         let displaySpan = document.getElementById('display_' + currentParamId);
+
+        // LEGGE IL MASSIMO DINAMICO IMPOSTATO NEL DATABASE (se non c'è, usa 10 di default)
+        let maxVal = parseInt(hiddenInput.getAttribute('data-max')) || 10;
 
         let valAttuale = hiddenInput.value;
         let nuovoValore = valAttuale + num.toString();
 
-        if (parseInt(nuovoValore) <= 10) {
+        // CONTROLLO SUL MASSIMO DINAMICO INVECE CHE SUL "10" FISSO
+        if (parseInt(nuovoValore) <= maxVal) {
             hiddenInput.value = nuovoValore;
             displaySpan.innerText = nuovoValore;
-        } else if (num <= 10) {
+        } else if (num <= maxVal) {
             hiddenInput.value = num;
             displaySpan.innerText = num;
         }
     }
-
+        
     function cancella() {
         if(currentParamId === null) return;
         let hiddenInput = document.getElementById('val_' + currentParamId);
@@ -288,21 +297,38 @@
     }
 
     document.getElementById('formDati').addEventListener('submit', function(e) {
+        // 1. Controllo RPE (Già esistente)
         let rpeInput = document.querySelector('input[data-is-rpe="true"]');
         if (rpeInput && rpeInput.value === '') {
             e.preventDefault();
             alert("Warning: The RPE value (🔥) is mandatory to save the training session.");
             let rpeId = rpeInput.id.split('_')[1];
             selezionaCampo(parseInt(rpeId));
+            return; // Ferma il controllo qui
         }
-    });
 
-    document.addEventListener('DOMContentLoaded', function() {
-        var tiles = document.querySelectorAll('.player-tile');
-        if (tiles.length === 1) {
-            setTimeout(function() {
-                tiles[0].click();
-            }, 150);
+        // 2. NUOVO CONTROLLO: Verifica che i valori inseriti rispettino MIN e MAX
+        let tuttiInput = document.querySelectorAll('input[name^="ValoriParametri"]');
+        for (let input of tuttiInput) {
+            if (input.value !== '') {
+                let valoreInserito = parseInt(input.value);
+                let valMinimo = parseInt(input.getAttribute('data-min'));
+                let valMassimo = parseInt(input.getAttribute('data-max'));
+
+                if (valoreInserito < valMinimo || valoreInserito > valMassimo) {
+                    e.preventDefault(); // Blocca l'invio del form
+
+                    // Recupera il nome del parametro per mostrare un messaggio chiaro
+                    let parentDiv = document.getElementById('btn_' + input.id.split('_')[1]);
+                    let nomeParametro = parentDiv.querySelector('span').innerText.replace(/🔥|📊/g, '').trim().split('\n')[0];
+
+                    alert(`Error: The value for "${nomeParametro}" must be between ${valMinimo} and ${valMassimo}.`);
+
+                    // Seleziona automaticamente il campo errato per farlo correggere
+                    selezionaCampo(parseInt(input.id.split('_')[1]));
+                    return;
+                }
+            }
         }
     });
 </script>

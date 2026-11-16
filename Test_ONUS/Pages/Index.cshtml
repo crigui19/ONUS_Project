@@ -148,10 +148,10 @@
 
     /* Regola l'immagine logo nel titolo per farla leggermente più grande */
     .title-logo-inline {
-        height: 1.6em; /* Aumentato da 1.2em a 1.6em */
+        height: 1.6em;
         width: auto;
         vertical-align: middle;
-        margin-top: -8px; /* Riallineato al centro del testo */
+        margin-top: -8px;
     }
 
     .feature-card-compact {
@@ -168,7 +168,107 @@
             border-color: var(--onus-blue);
             transform: translateY(-5px);
         }
+
+    /* --- STILI PER LO SFONDO CONDIVISO (SEZIONI 3 E 4) --- */
+    .philosophy-shared-bg {
+        background-image: url('/Images/13.png');
+        background-size: cover;
+        background-position: top center;
+        background-repeat: no-repeat;
+        position: relative;
+        /* Espande lo sfondo a tutta larghezza */
+        width: 100vw;
+        margin-left: calc(-50vw + 50%);
+        margin-right: calc(-50vw + 50%);
+        padding-top: 5rem;
+        padding-bottom: 5rem; /* Questo farà spazio anche alla sez. 4 in futuro */
+    }
+
+        .philosophy-shared-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background-color: rgba(17, 17, 17, 0.85); /* Overlay per far leggere il testo */
+            z-index: 0;
+        }
+
+    .philosophy-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* --- STILI PER IL TESTO PHILOSOPHY --- */
+    .philosophy-list {
+        list-style: none;
+        padding-left: 0;
+        text-align: left;
+        display: inline-block; /* Per centrarla nel div genitore */
+    }
+
+        .philosophy-list li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.8rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+        }
+
+            .philosophy-list li::before {
+                content: '-';
+                position: absolute;
+                left: 0;
+                color: var(--onus-blue);
+                font-weight: bold;
+            }
+
+    /* --- STILI PER LA TIMELINE --- */
+    .custom-timeline-wrapper {
+        position: relative;
+        padding: 1rem 0;
+    }
+
+    /* La linea di collegamento blu (Tratteggiata) */
+    .custom-timeline-line {
+        position: absolute;
+        top: 90px;
+        left: 16%;
+        width: 67%; /* Leggermente accorciata visto che non c'è più la freccia */
+        height: 0;
+        border-top: 4px dashed var(--onus-blue);
+        z-index: 1;
+    }
+
+    .timeline-dot {
+        display: block;
+        width: 26px; /* Leggermente più grande per compensare il bordo spesso */
+        height: 26px;
+        background: var(--onus-green);
+        border-radius: 50%;
+        border: 8px solid #181818; /* Bordo spesso e scuro che funge da 'gomma' per cancellare il tratteggio sotto */
+        margin: 0 auto 20px auto;
+        position: relative;
+        z-index: 2; /* Obbliga il pallino a stare in primo piano sopra la linea */
+    }
+
+    .timeline-img {
+        display: block;
+        height: 60px;
+        object-fit: contain;
+        margin: 0 auto 20px auto;
+        position: relative;
+        z-index: 2;
+    }
+
+    .img-timeline-bottom {
+        width: 100%;
+        max-height: 280px;
+        object-fit: contain;
+    }
 </style>
+
 <!-- PRIMA PARTE CON SFONDO 8.png -->
 <section class="hero-section">
     <div class="container pt-5 pb-5 mt-md-4 position-relative" style="z-index: 1;">
@@ -215,6 +315,7 @@
         </div>
     </div>
 </section>
+
 <!-- SECONDA PARTE: WHY ONUS -->
 <section class="why-section mt-5 border-top border-secondary">
     <div class="container why-content">
@@ -230,7 +331,6 @@
             <!-- Colonna 1 -->
             <div class="col-lg-3 col-md-6">
                 <div class="feature-card-compact">
-                    <!-- Sostituito text-white con text-gradient-onus -->
                     <h5 class="text-gradient-onus fw-bold mb-3">EVIDENCE BASED</h5>
                     <p class="text-white-50 small mb-0" style="line-height: 1.6;">
                         Our 3 main metrics are based on thousand of validated scientific studies.<br><br>
@@ -275,3 +375,79 @@
         </div>
     </div>
 </section>
+
+<!-- TERZA PARTE: OUR PHILOSOPHY (Sfondo Condiviso) -->
+<div class="philosophy-shared-bg mt-5 border-top border-secondary">
+    <div class="container philosophy-content">
+
+        <!-- Intestazione e Testo -->
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold text-white mb-4">- Our Philosophy -</h2>
+            <div style="width: 60px; height: 4px; background: var(--onus-blue); margin: 0 auto 3rem auto; border-radius: 2px;"></div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <p class="fs-5 text-white mb-4">
+                        We’ve been working in strength and conditioning field since many years now, and we constantly facing the <span class="text-gradient-onus fw-bold">“DATA CHALLENGE”</span>.
+                    </p>
+                    <ul class="philosophy-list">
+                        <li>How many metrics should I track?</li>
+                        <li>How do I track daily and long term?</li>
+                        <li>How much technology do i need?</li>
+                        <li>How easy in to collect the numbers?</li>
+                        <li>How can I involve into the decision process the coaching staff?</li>
+                        <li>How can I involve my athletes in the process without wasting their time?</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Blocco Grafico: 30.png + Timeline + 2.png -->
+        <div class="row g-5 mt-4">
+            <!-- Immagine 30.png a sinistra -->
+            <div class="col-lg-4 d-flex">
+                <img src="/Images/30.png" alt="Data Challenge" class="img-fluid rounded-4 shadow-lg w-100" style="object-fit: cover;" />
+            </div>
+
+            <!-- Colonna Timeline a destra -->
+            <div class="col-lg-8 d-flex flex-column justify-content-between">
+
+                <!-- La Timeline -->
+                <div class="custom-timeline-wrapper">
+                    <!-- Linea connettiva in background -->
+                    <div class="custom-timeline-line d-none d-md-block"></div>
+
+                    <div class="row text-center position-relative" style="z-index: 2;">
+                        <!-- Punto 1 -->
+                        <div class="col-md-4 mb-4 mb-md-0">
+                            <img src="/Images/MEDIA.PNG" alt="Define Metrics" class="timeline-img" />
+                            <div class="timeline-dot"></div>
+                            <h6 class="text-gradient-onus fw-bold">1- DEFINE METRICS</h6>
+                        </div>
+                        <!-- Punto 2 -->
+                        <div class="col-md-4 mb-4 mb-md-0">
+                            <img src="/Images/HEARTHRATE.PNG" alt="Data Collection" class="timeline-img" />
+                            <div class="timeline-dot"></div>
+                            <h6 class="text-gradient-onus fw-bold">2- DATA COLLECTION</h6>
+                        </div>
+                        <!-- Punto 3 -->
+                        <div class="col-md-4">
+                            <img src="/Images/COACH.PNG" alt="Report & Sharing" class="timeline-img" />
+                            <div class="timeline-dot"></div>
+                            <h6 class="text-gradient-onus fw-bold">3 -REPORT & SHARING</h6>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Immagine 2.png in basso -->
+                <div class="text-center mt-4 mt-md-auto">
+                    <img src="/Images/2.png" alt="Process Output" class="img-timeline-bottom" />
+                </div>
+
+            </div>
+        </div>
+
+        <!-- QUI DENTRO INSERIREMO LA SEZIONE 4 IN FUTURO -->
+
+    </div>
+</div>

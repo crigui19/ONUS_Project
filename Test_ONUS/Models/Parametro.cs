@@ -18,5 +18,6 @@ namespace Test_ONUS.Models
         public bool IsCalcoloCarico { get; set; } = false;
         // NUOVO CAMPO: Se Null = Globale (RPE, Sonno, ecc.), Se valorizzato = Custom della squadra
         public int? SquadraId { get; set; }
+        public Squadra? Squadra { get; set; }
     }
 }

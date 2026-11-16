@@ -1,8 +1,8 @@
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Threading.Tasks;
 using Test_ONUS.Data;
 
 namespace Test_ONUS.Pages
@@ -27,44 +27,72 @@ namespace Test_ONUS.Pages
 
         public string Message { get; set; } = string.Empty;
 
-        public void OnGet() { }
+        public async Task<IActionResult> OnGetAsync()
+        {
+            if (string.IsNullOrWhiteSpace(Token))
+            {
+                Message = "Token di sicurezza mancante o non valido.";
+                return Page();
+            }
+
+            var tokenHash = CalcolaHashToken(Token);
+            var tokenValido = await _context.PreparatoriAtletici
+                .AnyAsync(p => p.ResetToken == tokenHash && p.ResetTokenScadenza > DateTime.UtcNow);
+
+            if (!tokenValido)
+            {
+                Message = "Questo link non è valido o è scaduto. Richiedine uno nuovo.";
+            }
+
+            return Page();
+        }
 
         public async Task<IActionResult> OnPostAsync()
         {
-            if (string.IsNullOrEmpty(Token))
+            if (string.IsNullOrWhiteSpace(Token))
             {
-                Message = "Invalid or missing security token.";
+                Message = "Token di sicurezza mancante o non valido.";
+                return Page();
+            }
+
+            if (string.IsNullOrWhiteSpace(NuovaPassword) || NuovaPassword.Length < 8)
+            {
+                Message = "La nuova password deve contenere almeno 8 caratteri.";
                 return Page();
             }
 
             if (NuovaPassword != ConfermaPassword)
             {
-                Message = "Passwords do not match.";
+                Message = "Le password non coincidono.";
                 return Page();
             }
 
-            // Cerca il preparatore che ha questo token ESATTO e verifica che non sia scaduto
+            var tokenHash = CalcolaHashToken(Token);
+
             var coach = await _context.PreparatoriAtletici.FirstOrDefaultAsync(p =>
-                p.ResetToken == Token &&
+                p.ResetToken == tokenHash &&
                 p.ResetTokenScadenza > DateTime.UtcNow);
 
             if (coach == null)
             {
-                Message = "This reset link is invalid or has expired. Please request a new one.";
+                Message = "Questo link non è valido o è scaduto. Richiedine uno nuovo.";
                 return Page();
             }
 
-            // Aggiorna la password con BCrypt
             coach.Password = BCrypt.Net.BCrypt.HashPassword(NuovaPassword);
-
-            // Invalida il token per evitare che venga riutilizzato
             coach.ResetToken = null;
             coach.ResetTokenScadenza = null;
 
             await _context.SaveChangesAsync();
 
-            // Reindirizza al Login con magari un messaggio di successo salvato in TempData (opzionale)
+            TempData["MessaggioSuccesso"] = "Password aggiornata con successo. Ora puoi accedere.";
             return RedirectToPage("/Login");
+        }
+
+        private static string CalcolaHashToken(string rawToken)
+        {
+            var bytes = Encoding.UTF8.GetBytes(rawToken.Trim());
+            return Convert.ToBase64String(SHA256.HashData(bytes));
         }
     }
 }

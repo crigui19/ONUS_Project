@@ -1,31 +1,35 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Test_ONUS.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // ==========================================
-// 1. CONFIGURAZIONI PER NEXT.JS (API & CORS)
+// 1. CONFIGURAZIONE API & CORS (NEXT.JS)
 // ==========================================
-builder.Services.AddControllers(); // Abilita le API
+builder.Services.AddControllers();
+
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+                     ?? new[] { "http://localhost:3000" };
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowNextJs", policy =>
     {
-        policy.WithOrigins(
-                "http://localhost:3000",          // Per lo sviluppo locale
-                "https://tuo-sito-nextjs.com"     // INSERISCI QUI IL DOMINIO FUTURO DEL TUO FRONTEND!
-              )
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
+
 // ==========================================
-// 2. CONFIGURAZIONE DATABASE
+// 2. CONFIGURAZIONE DATABASE (POSTGRESQL)
 // ==========================================
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL")
                   ?? Environment.GetEnvironmentVariable("INTERNAL_DATABASE_URL");
 
@@ -37,46 +41,30 @@ if (!string.IsNullOrEmpty(databaseUrl))
     {
         var databaseUri = new Uri(databaseUrl);
         var userInfo = databaseUri.UserInfo.Split(':');
-
-        // TRUCCHETTO PORTA: Se Render non scrive la porta nel link, usiamo la 5432 di default
         var port = databaseUri.Port > 0 ? databaseUri.Port : 5432;
 
-        // Ho modificato SSL Mode in "Prefer" che è lo standard per i database interni di Render
         connectionString = $"Host={databaseUri.Host};Port={port};Database={databaseUri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Prefer;Trust Server Certificate=True;";
     }
 }
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-   options.UseNpgsql(connectionString));
-
-//builder.Services.AddDbContext<ApplicationDbContext>(options =>
-//   options.UseNpgsql(connectionString)); // <-- Cambiato da UseSqlite a UseNpgsq
-
-//var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
-//// Aggiungi questo: se il server è Render, dirotta il DB nella cartella persistente
-//if (Environment.GetEnvironmentVariable("RENDER") == "true")
-//{
-//    connectionString = "Data Source=/data/OnusDb.db";
-//}
-
-//builder.Services.AddDbContext<ApplicationDbContext>(options =>
-//    options.UseSqlite(connectionString));
+    options.UseNpgsql(connectionString));
 
 // ==========================================
-// 3. SERVIZI PER SESSIONE E PAGINE (RAZOR)
+// 3. RAZOR PAGES, SESSIONE & LOCALIZZAZIONE
 // ==========================================
 builder.Services.AddRazorPages().AddViewLocalization();
-builder.Services.AddSession(options => {
+
+builder.Services.AddSession(options =>
+{
     options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
+    options.Cookie.SameSite = SameSiteMode.Lax;
 });
 
-// ==========================================
-// 4. CONFIGURAZIONE LOCALIZZAZIONE
-// ==========================================
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
 builder.Services.Configure<RequestLocalizationOptions>(options =>
 {
     var supportedCultures = new[] { "it", "en" };
@@ -85,8 +73,42 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
            .AddSupportedUICultures(supportedCultures);
 });
 
+// ==========================================
+// 4. AUTENTICAZIONE (COOKIE & GOOGLE OAUTH)
+// ==========================================
+var authBuilder = builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+})
+.AddCookie(options =>
+{
+    options.LoginPath = "/Login";
+});
+
+var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
+var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+
+if (!string.IsNullOrWhiteSpace(googleClientId) && !string.IsNullOrWhiteSpace(googleClientSecret))
+{
+    authBuilder.AddGoogle(options =>
+    {
+        options.ClientId = googleClientId;
+        options.ClientSecret = googleClientSecret;
+        options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    });
+}
+
+// Configurazione header proxy per Render (HTTPS)
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 
 var app = builder.Build();
+
 // ==========================================
 // AUTO-MIGRAZIONE DATABASE ALL'AVVIO
 // ==========================================
@@ -96,7 +118,6 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
-        // Applica automaticamente le migrazioni (crea le tabelle su Neon/Postgres)
         context.Database.Migrate();
     }
     catch (Exception ex)
@@ -104,58 +125,62 @@ using (var scope = app.Services.CreateScope())
         Console.WriteLine($"Errore durante la migrazione del database: {ex.Message}");
     }
 }
-// ==========================================
-// 5. CONFIGURAZIONE PIPELINE HTTP
-// ==========================================
-//if (!app.Environment.IsDevelopment())
-//{
-//    app.UseExceptionHandler("/Error");
-//    app.UseHsts();
-//}
 
-// ⚠️ RICORDA: Lo teniamo commentato finché sviluppi in locale con Next.js!
-// Altrimenti avrai l'errore "fetch failed"
-// app.UseHttpsRedirection();
+// ==========================================
+// 5. PIPELINE HTTP (ORDINE CORRETTO)
+// ==========================================
+app.UseForwardedHeaders();
 
-app.UseRequestLocalization(); // Corretto: inserito prima di UseStaticFiles e UseRouting
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Error");
+    app.UseHsts();
+}
+
+app.UseRequestLocalization();
 app.UseStaticFiles();
 app.UseRouting();
 
-app.UseCors("AllowNextJs"); // ATTIVA IL CORS PER NEXT.JS
+app.UseCors("AllowNextJs");
 
+app.UseAuthentication();
 app.UseAuthorization();
 app.UseSession();
+
+// Ripristino sicuro della sessione tramite cookie crittografato "Ruolo:Id"
 app.Use(async (context, next) =>
 {
-    // Se la sessione è vuota (il server si è riavviato) ma il cookie "Remember Me" esiste
-    if (context.Session.GetInt32("UserId") == null && context.Request.Cookies.ContainsKey("OnusAuth"))
+    if (context.Session.GetInt32("UserId") == null && context.Request.Cookies.TryGetValue("OnusAuth", out var authCookie))
     {
         try
         {
-            var provider = context.RequestServices.GetRequiredService<Microsoft.AspNetCore.DataProtection.IDataProtectionProvider>();
+            var provider = context.RequestServices.GetRequiredService<IDataProtectionProvider>();
             var protector = provider.CreateProtector("Onus.Auth.v1");
+            var payload = protector.Unprotect(authCookie); // Formato atteso: "Atleta:12" oppure "Staff:3"
 
-            // Decripta l'ID utente in modo sicuro
-            var decryptedUserId = protector.Unprotect(context.Request.Cookies["OnusAuth"]!);
-
-            if (int.TryParse(decryptedUserId, out int userId))
+            var parts = payload.Split(':');
+            if (parts.Length == 2 && int.TryParse(parts[1], out int userId))
             {
-                var db = context.RequestServices.GetRequiredService<Test_ONUS.Data.ApplicationDbContext>();
+                var ruolo = parts[0];
+                var db = context.RequestServices.GetRequiredService<ApplicationDbContext>();
 
-                // Cerca prima tra gli atleti
-                var atleta = db.Atleti.Find(userId);
-                if (atleta != null)
+                if (ruolo == "Atleta")
                 {
-                    context.Session.SetInt32("UserId", atleta.Id);
-                    context.Session.SetString("Ruolo", "Atleta");
-                    context.Session.SetString("Nome", atleta.Nome);
-                    context.Session.SetString("Cognome", atleta.Cognome);
-                    context.Session.SetString("NomeCompleto", $"{atleta.Nome} {atleta.Cognome}");
-                    context.Session.SetInt32("SquadraId", (int)atleta.SquadraId);
+                    var atleta = db.Atleti.Find(userId);
+                    if (atleta != null)
+                    {
+                        context.Session.SetInt32("UserId", atleta.Id);
+                        context.Session.SetString("Ruolo", "Atleta");
+                        context.Session.SetString("Nome", atleta.Nome);
+                        context.Session.SetString("Cognome", atleta.Cognome);
+                        context.Session.SetString("NomeCompleto", $"{atleta.Nome} {atleta.Cognome}");
+                        context.Session.SetInt32("SquadraId", atleta.SquadraId);
+                        context.Session.SetInt32("Altezza", atleta.Altezza);
+                        context.Session.SetString("Peso", atleta.Peso.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                    }
                 }
-                else
+                else if (ruolo == "Staff")
                 {
-                    // Se non è un atleta, cerca tra lo staff
                     var staff = db.PreparatoriAtletici.Find(userId);
                     if (staff != null)
                     {
@@ -171,15 +196,15 @@ app.Use(async (context, next) =>
         }
         catch
         {
-            // Se il cookie è scaduto o manomesso, ignoriamo (verrà reindirizzato al login normale)
+            // Cookie scaduto, invalido o vecchio formato: lo rimuoviamo per forzare un login pulito
+            context.Response.Cookies.Delete("OnusAuth");
         }
     }
+
     await next();
 });
 
-app.UseRouting();
-
-app.MapControllers(); // MAPPA LE TUE API C#
-app.MapRazorPages();  // MAPPA LE TUE PAGINE CLASSICHE
+app.MapControllers();
+app.MapRazorPages();
 
 app.Run();

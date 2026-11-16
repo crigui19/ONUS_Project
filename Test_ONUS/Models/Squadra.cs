@@ -8,12 +8,9 @@ namespace Test_ONUS.Models
         public int Id { get; set; }
 
         [Required]
-        public required string Nome { get; set; }
+        public string Nome { get; set; } = string.Empty;
 
-        // Relazione: Una squadra ha un preparatore (o più)
-        public required ICollection<PreparatoreAtletico> Preparatori { get; set; }
-
-        // Relazione: Una squadra ha molti atleti
-        public required ICollection<Atleta> Atleti { get; set; }
+        public ICollection<Atleta> Atleti { get; set; } = new List<Atleta>();
+        public ICollection<PreparatoreAtletico> Preparatori { get; set; } = new List<PreparatoreAtletico>();
     }
 }

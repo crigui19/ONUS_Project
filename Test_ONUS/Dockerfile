@@ -21,8 +21,7 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-# Crea la cartella /data per SQLite e dai i permessi massimi di scrittura
-USER root
-RUN mkdir -p /data && chmod 777 /data
+# Assicura che la cartella per le foto profilo caricate esista ed abbia i permessi di scrittura
+RUN mkdir -p /app/wwwroot/Img && chmod -R 775 /app/wwwroot/Img
 
 ENTRYPOINT ["dotnet", "Test_ONUS.dll"]

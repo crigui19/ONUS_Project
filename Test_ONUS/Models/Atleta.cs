@@ -12,7 +12,6 @@ namespace Test_ONUS.Models
         [Required]
         public string Cognome { get; set; } = string.Empty;
 
-        // QUESTA E' LA RIGA CHE MANCA O CHE NON E' STATA SALVATA
         public string Password { get; set; } = string.Empty;
 
         public int SquadraId { get; set; }
@@ -20,10 +19,15 @@ namespace Test_ONUS.Models
 
         public int Altezza { get; set; }
         public double Peso { get; set; }
+
         public bool IsAttivo { get; set; } = true;
         public bool IsInfortunato { get; set; }
         public bool IsInRiabilitazione { get; set; }
         public string? DescrizioneInfortunio { get; set; }
+
         public string FotoUrl { get; set; } = "/Img/default.png";
+
+        public ICollection<SessioneAllenamento> Sessioni { get; set; } = new List<SessioneAllenamento>();
+        public ICollection<SottoscrizionePush> SottoscrizioniPush { get; set; } = new List<SottoscrizionePush>();
     }
 }

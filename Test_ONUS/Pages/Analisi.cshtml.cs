@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Test_ONUS.Data;
 using Microsoft.EntityFrameworkCore;
+using Test_ONUS.Data;
 using Test_ONUS.Models;
 
 namespace Test_ONUS.Pages
@@ -18,178 +18,225 @@ namespace Test_ONUS.Pages
         public List<Atleta> Atleti { get; set; } = new();
         public List<SessioneAllenamento> SessioniAtleta { get; set; } = new();
 
-        public string[] EtichetteDate { get; set; }
-        public double[] DatiAcute { get; set; }
-        public double[] DatiChronic { get; set; }
-        public double[] DatiACWR { get; set; }
-        // NUOVA PROPRIETÀ PER LO Z-SCORE
-        public double[] DatiZScore { get; set; }
-        public string NomeAtletaSelezionato { get; set; } = "";
+        public string[] EtichetteDate { get; set; } = Array.Empty<string>();
+        public double[] DatiAcute { get; set; } = Array.Empty<double>();
+        public double[] DatiChronic { get; set; } = Array.Empty<double>();
+        public double[] DatiACWR { get; set; } = Array.Empty<double>();
+        public double[] DatiZScore { get; set; } = Array.Empty<double>();
+
+        public string NomeAtletaSelezionato { get; set; } = string.Empty;
         public bool IsStaff { get; set; } = false;
         public double CaricoSettimanale { get; set; }
+        public double MonotoniaSettimanale { get; set; }
+        public double StrainSettimanale { get; set; }
         public int AltezzaAtleta { get; set; }
         public double PesoAtleta { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(int? atletaId, string filtroTempo) // Aggiunto filtroTempo
+        public async Task<IActionResult> OnGetAsync(int? atletaId, string? filtroTempo)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             var ruolo = HttpContext.Session.GetString("Ruolo");
+            var squadraId = HttpContext.Session.GetInt32("SquadraId");
 
-            if (userId == null) return RedirectToPage("/Login");
+            if (userId == null)
+                return RedirectToPage("/Login");
 
             IsStaff = (ruolo == "Staff");
 
-            // --- CARICAMENTO ATLETI ---
+            // 1. Caricamento atleti isolato per squadra / ruolo
             if (IsStaff)
             {
-                Atleti = await _context.Atleti.Where(a => a.IsAttivo).ToListAsync();
+                if (squadraId == null)
+                    return RedirectToPage("/Login");
+
+                Atleti = await _context.Atleti
+                    .AsNoTracking()
+                    .Where(a => a.IsAttivo && a.SquadraId == squadraId.Value)
+                    .OrderBy(a => a.Cognome)
+                    .ThenBy(a => a.Nome)
+                    .ToListAsync();
             }
             else
             {
-                Atleti = await _context.Atleti.Where(a => a.Id == userId).ToListAsync();
-                atletaId = userId;
+                Atleti = await _context.Atleti
+                    .AsNoTracking()
+                    .Where(a => a.Id == userId.Value)
+                    .ToListAsync();
+
+                atletaId = userId.Value;
             }
 
-            // --- LOGICA SE UN ATLETA E' SELEZIONATO ---
+            // 2. Se un atleta è selezionato, verifica che appartenga alla lista autorizzata
             if (atletaId.HasValue)
             {
-                var atleta = Atleti.FirstOrDefault(a => a.Id == atletaId);
-                if (atleta == null && !IsStaff) return RedirectToPage("/Login");
+                var atleta = Atleti.FirstOrDefault(a => a.Id == atletaId.Value);
+                if (atleta == null)
+                    return Forbid();
 
-                if (atleta != null)
-                {
-                    NomeAtletaSelezionato = $"{atleta.Nome} {atleta.Cognome}";
-                    AltezzaAtleta = atleta.Altezza;
-                    PesoAtleta = atleta.Peso;
-                }
-                // 1. Recupero TUTTE le sessioni dell'atleta dal database
+                NomeAtletaSelezionato = $"{atleta.Nome} {atleta.Cognome}";
+                AltezzaAtleta = atleta.Altezza;
+                PesoAtleta = atleta.Peso;
+
                 var tutteLeSessioni = await _context.Sessioni
+                    .AsNoTracking()
                     .Include(s => s.Valori)
-                    .ThenInclude(v => v.Parametro)
-                    .Where(s => s.AtletaId == atletaId)
+                        .ThenInclude(v => v.Parametro)
+                    .Where(s => s.AtletaId == atleta.Id)
                     .OrderByDescending(s => s.Data)
                     .ToListAsync();
 
-                // 2. Calcolo Carico Settimanale FISSO (sempre ultimi 7 giorni reali)
-                var dataLimiteSettimana = DateTime.Now.AddDays(-7);
+                // Carico settimanale fisso (ultimi 7 giorni UTC)
+                var dataLimiteSettimana = DateTime.UtcNow.Date.AddDays(-6);
                 CaricoSettimanale = tutteLeSessioni
-                    .Where(s => s.Data >= dataLimiteSettimana)
+                    .Where(s => s.Data.Date >= dataLimiteSettimana)
                     .Sum(s => s.CaricoCalcolato);
 
-                // 3. APPLICAZIONE DEL FILTRO TEMPORALE
-                DateTime dataInizioFiltro = DateTime.MinValue;
-
+                // Filtro temporale applicato SOLO alla lista visualizzata in tabella
                 switch (filtroTempo)
                 {
                     case "ultimi7":
                         SessioniAtleta = tutteLeSessioni.Take(7).ToList();
                         break;
                     case "ultimaSettimana":
-                        dataInizioFiltro = DateTime.Now.AddDays(-7);
-                        SessioniAtleta = tutteLeSessioni.Where(s => s.Data >= dataInizioFiltro).ToList();
+                        var inizioSettimana = DateTime.UtcNow.AddDays(-7);
+                        SessioniAtleta = tutteLeSessioni.Where(s => s.Data >= inizioSettimana).ToList();
                         break;
                     case "meseCorrente":
-                        dataInizioFiltro = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-                        SessioniAtleta = tutteLeSessioni.Where(s => s.Data >= dataInizioFiltro).ToList();
+                        var oggiUtc = DateTime.UtcNow;
+                        var inizioMese = new DateTime(oggiUtc.Year, oggiUtc.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+                        SessioniAtleta = tutteLeSessioni.Where(s => s.Data >= inizioMese).ToList();
                         break;
                     case "tutto":
-                    default: // Ora il comportamento base è "Intera Stagione"
+                    default:
                         SessioniAtleta = tutteLeSessioni;
                         break;
                 }
 
-                // 4. Calcola i grafici basandosi SOLO sui dati filtrati!
-                CalcolaGrafici(SessioniAtleta);
-            }
-            else
-            {
-                // Se non c'è atleta, inizializza la lista vuota per evitare errori nella View
-                SessioniAtleta = new List<SessioneAllenamento>();
+                // I grafici (ACWR 7:28 e Z-Score 28gg) usano SEMPRE lo storico completo
+                CalcolaGrafici(tutteLeSessioni);
             }
 
             return Page();
         }
 
-        private void CalcolaGrafici(List<SessioneAllenamento> sessioni)
+        private void CalcolaGrafici(List<SessioneAllenamento> tutteLeSessioni)
         {
-            var date = new List<string>();
-            var acute = new List<double>();
-            var chronic = new List<double>();
-            var acwr = new List<double>();
-            var zScores = new List<double>(); // Corretto: ora popoliamo questa lista
+            var date = new List<string>(29);
+            var acute = new List<double>(29);
+            var chronic = new List<double>(29);
+            var acwr = new List<double>(29);
+            var zScores = new List<double>(29);
 
-            DateTime oggi = DateTime.Today;
+            // Pre-aggrega i carichi giornalieri in un dizionario O(1)
+            var caricoPerGiorno = tutteLeSessioni
+                .GroupBy(s => s.Data.Date)
+                .ToDictionary(g => g.Key, g => (double)g.Sum(s => s.CaricoCalcolato));
+
+            DateTime oggi = DateTime.UtcNow.Date;
 
             for (int i = 28; i >= 0; i--)
             {
                 DateTime giornoCorrente = oggi.AddDays(-i);
                 date.Add(giornoCorrente.ToString("dd/MM"));
 
-                double caricoAcuto = sessioni
-                    .Where(s => s.Data.Date > giornoCorrente.AddDays(-7) && s.Data.Date <= giornoCorrente)
-                    .Sum(s => s.CaricoCalcolato);
+                double caricoGiornaliero = caricoPerGiorno.GetValueOrDefault(giornoCorrente, 0);
 
-                double caricoCronicoTotale = sessioni
-                    .Where(s => s.Data.Date > giornoCorrente.AddDays(-28) && s.Data.Date <= giornoCorrente)
-                    .Sum(s => s.CaricoCalcolato);
-
-                double mediaCronica = caricoCronicoTotale / 4.0;
-
-                // --- CALCOLO Z-SCORE GIORNALIERO ---
-                double caricoGiornaliero = sessioni.Where(s => s.Data.Date == giornoCorrente.Date).Sum(s => s.CaricoCalcolato);
-
-                var carichi28gg = new List<double>();
-                for (int j = 0; j < 28; j++)
+                // Carico acuto (ultimi 7 giorni inclusi oggi)
+                double caricoAcuto = 0;
+                for (int d = 0; d < 7; d++)
                 {
-                    double c = sessioni.Where(s => s.Data.Date == giornoCorrente.AddDays(-j).Date).Sum(s => s.CaricoCalcolato);
-                    carichi28gg.Add(c);
+                    caricoAcuto += caricoPerGiorno.GetValueOrDefault(giornoCorrente.AddDays(-d), 0);
                 }
 
-                double media28 = carichi28gg.Average();
-                double devStd = Math.Sqrt(carichi28gg.Sum(l => Math.Pow(l - media28, 2)) / 28);
-                double zScore = devStd > 0 ? Math.Round((caricoGiornaliero - media28) / devStd, 2) : 0;
+                // Carico cronico e Z-Score sugli ultimi 28 giorni
+                var carichi28gg = new double[28];
+                double caricoCronicoTotale = 0;
+                for (int j = 0; j < 28; j++)
+                {
+                    double c = caricoPerGiorno.GetValueOrDefault(giornoCorrente.AddDays(-j), 0);
+                    carichi28gg[j] = c;
+                    caricoCronicoTotale += c;
+                }
+
+                double mediaCronica = caricoCronicoTotale / 4.0;
+                double media28 = caricoCronicoTotale / 28.0;
+                double varianza28 = carichi28gg.Sum(l => Math.Pow(l - media28, 2)) / 28.0;
+                double devStd28 = Math.Sqrt(varianza28);
+                double zScore = devStd28 > 0 ? Math.Round((caricoGiornaliero - media28) / devStd28, 2) : 0;
 
                 acute.Add(caricoAcuto);
                 chronic.Add(mediaCronica);
                 acwr.Add(mediaCronica > 0 ? Math.Round(caricoAcuto / mediaCronica, 2) : 0);
-                zScores.Add(zScore); // Aggiunto alla lista
+                zScores.Add(zScore);
+
+                // Calcolo Monotonia e Strain di Foster sull'ultimo giorno (oggi)
+                if (i == 0)
+                {
+                    var carichi7gg = carichi28gg.Take(7).ToArray();
+                    double media7 = carichi7gg.Average();
+                    double devStd7 = Math.Sqrt(carichi7gg.Sum(l => Math.Pow(l - media7, 2)) / 7.0);
+                    MonotoniaSettimanale = devStd7 > 0 ? Math.Round(media7 / devStd7, 2) : 0;
+                    StrainSettimanale = Math.Round(caricoAcuto * MonotoniaSettimanale, 0);
+                }
             }
 
             EtichetteDate = date.ToArray();
             DatiAcute = acute.ToArray();
             DatiChronic = chronic.ToArray();
             DatiACWR = acwr.ToArray();
-            DatiZScore = zScores.ToArray(); // Inviato al grafico
+            DatiZScore = zScores.ToArray();
         }
 
-        public async Task<IActionResult> OnPostUpdateSessionAsync(int sessionId, DateTime data, int durata, int rpe, int sonno, int dolore, string note)
+        public async Task<IActionResult> OnPostUpdateSessionAsync(
+            int sessionId,
+            DateTime data,
+            int durata,
+            int rpe,
+            int sonno,
+            int dolore,
+            string? note)
         {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var ruolo = HttpContext.Session.GetString("Ruolo");
+            var squadraId = HttpContext.Session.GetInt32("SquadraId");
+
+            if (userId == null)
+                return RedirectToPage("/Login");
+
             var sessione = await _context.Sessioni
+                .Include(s => s.Atleta)
                 .Include(s => s.Valori)
-                .ThenInclude(v => v.Parametro)
+                    .ThenInclude(v => v.Parametro)
                 .FirstOrDefaultAsync(s => s.Id == sessionId);
 
-            if (sessione != null)
-            {
-                sessione.Data = data;
-                sessione.DurataTotaleMinuti = durata;
-                sessione.Note = note;
+            if (sessione == null)
+                return NotFound();
 
-                // Aggiorniamo i valori cercando nella lista
-                var valRpe = sessione.Valori.FirstOrDefault(v => v.Parametro.IsCalcoloCarico);
-                if (valRpe != null) valRpe.Valore = rpe;
+            // Autorizzazione: Staff della stessa squadra oppure l'atleta proprietario della sessione
+            bool autorizzato = (ruolo == "Atleta" && sessione.AtletaId == userId.Value)
+                            || (ruolo == "Staff" && squadraId.HasValue && sessione.Atleta.SquadraId == squadraId.Value);
 
-                var valSonno = sessione.Valori.FirstOrDefault(v => v.Parametro.Nome.Contains("Sonno"));
-                if (valSonno != null) valSonno.Valore = sonno;
+            if (!autorizzato)
+                return Forbid();
 
-                var valDolore = sessione.Valori.FirstOrDefault(v => v.Parametro.Nome.Contains("Dolore") || v.Parametro.Nome.Contains("Indolenzimento"));
-                if (valDolore != null) valDolore.Valore = dolore;
+            // Npgsql richiede DateTime con Kind=Utc per colonne timestamptz
+            sessione.Data = DateTime.SpecifyKind(data, DateTimeKind.Utc);
+            sessione.DurataTotaleMinuti = durata > 0 ? durata : sessione.DurataTotaleMinuti;
+            sessione.Note = note?.Trim();
 
-                await _context.SaveChangesAsync();
-                return RedirectToPage(new { atletaId = sessione.AtletaId });
-            }
+            var valRpe = sessione.Valori.FirstOrDefault(v => v.Parametro != null && v.Parametro.IsCalcoloCarico);
+            if (valRpe != null) valRpe.Valore = rpe;
 
-            return RedirectToPage();
+            var valSonno = sessione.Valori.FirstOrDefault(v => v.Parametro != null && v.Parametro.Nome.Contains("Sonno"));
+            if (valSonno != null) valSonno.Valore = sonno;
+
+            var valDolore = sessione.Valori.FirstOrDefault(v => v.Parametro != null &&
+                (v.Parametro.Nome.Contains("Dolore") || v.Parametro.Nome.Contains("Indolenzimento")));
+            if (valDolore != null) valDolore.Valore = dolore;
+
+            await _context.SaveChangesAsync();
+            TempData["MessaggioSuccesso"] = "Sessione aggiornata correttamente.";
+            return RedirectToPage(new { atletaId = sessione.AtletaId });
         }
     }
 }

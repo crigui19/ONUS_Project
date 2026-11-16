@@ -1,8 +1,9 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using Test_ONUS.Data;
 using Test_ONUS.Models;
-using System.ComponentModel.DataAnnotations;
 
 namespace Test_ONUS.Pages
 {
@@ -18,56 +19,68 @@ namespace Test_ONUS.Pages
         [BindProperty]
         public RegistrazioneInput Input { get; set; } = new();
 
-        public string ErrorMsg { get; set; } = "";
+        public string ErrorMsg { get; set; } = string.Empty;
 
-        // Classe di supporto per il form
         public class RegistrazioneInput
         {
-            [Required] public string Nome { get; set; } = "";
-            [Required] public string Cognome { get; set; } = "";
-            [Required] public string Password { get; set; } = "";
-            [Required] public string NomeSquadra { get; set; } = "";
-            // AGGIUNGI QUESTA RIGA:
-            [Required, EmailAddress]
-            public string Email { get; set; } = "";
+            [Required] public string Nome { get; set; } = string.Empty;
+            [Required] public string Cognome { get; set; } = string.Empty;
+            [Required] public string NomeSquadra { get; set; } = string.Empty;
+            [Required, EmailAddress] public string Email { get; set; } = string.Empty;
+
+            [Required]
+            [MinLength(8, ErrorMessage = "La password deve contenere almeno 8 caratteri.")]
+            [DataType(DataType.Password)]
+            public string Password { get; set; } = string.Empty;
+
+            [Required(ErrorMessage = "Conferma la password")]
+            [DataType(DataType.Password)]
+            [Compare("Password", ErrorMessage = "Le password non coincidono.")]
+            public string ConfermaPassword { get; set; } = string.Empty;
         }
 
         public void OnGet() { }
 
         public async Task<IActionResult> OnPostAsync()
         {
-            if (!ModelState.IsValid) return Page();
+            if (!ModelState.IsValid)
+                return Page();
+
+            var emailNormalizzata = Input.Email.Trim().ToLower();
+
+            var emailEsistente = await _context.PreparatoriAtletici
+                .AnyAsync(p => p.Email.ToLower() == emailNormalizzata);
+
+            if (emailEsistente)
+            {
+                ErrorMsg = "Esiste già un account registrato con questa email.";
+                return Page();
+            }
 
             try
             {
-                // 1. Creiamo la Squadra
                 var nuovaSquadra = new Squadra
                 {
-                    Nome = Input.NomeSquadra,
-                    // Inizializziamo le liste per evitare errori di validazione se richiesto dalle classi 'required'
+                    Nome = Input.NomeSquadra.Trim(),
                     Preparatori = new List<PreparatoreAtletico>(),
                     Atleti = new List<Atleta>()
                 };
 
-                _context.Squadre.Add(nuovaSquadra);
-                // Salviamo per ottenere l'ID della squadra
-                await _context.SaveChangesAsync();
-
-                // 2. Creiamo il Preparatore collegandolo alla squadra appena creata
                 var nuovoCoach = new PreparatoreAtletico
                 {
-                    Nome = Input.Nome,
-                    Cognome = Input.Cognome,
-                    Email = Input.Email,
+                    Nome = Input.Nome.Trim(),
+                    Cognome = Input.Cognome.Trim(),
+                    Email = Input.Email.Trim(),
                     Password = BCrypt.Net.BCrypt.HashPassword(Input.Password),
-                    SquadraId = nuovaSquadra.Id,
                     Squadra = nuovaSquadra
                 };
 
+                _context.Squadre.Add(nuovaSquadra);
                 _context.PreparatoriAtletici.Add(nuovoCoach);
+
+                // Un unico SaveChangesAsync garantisce una transazione atomica
                 await _context.SaveChangesAsync();
 
-                // 3. Reindirizziamo al Login
                 return RedirectToPage("/Login");
             }
             catch (Exception ex)
