@@ -1,15 +1,16 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Test_ONUS.Models;
 
 namespace Test_ONUS.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : DbContext, IDataProtectionKeyContext
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
         }
-
+        public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
         public DbSet<Atleta> Atleti { get; set; }
         public DbSet<SessioneAllenamento> Sessioni { get; set; }
         public DbSet<Parametro> Parametri { get; set; }

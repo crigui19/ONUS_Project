@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Test_ONUS.Data;
+using Microsoft.AspNetCore.DataProtection;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +13,9 @@ var builder = WebApplication.CreateBuilder(args);
 // 1. CONFIGURAZIONE API & CORS (NEXT.JS)
 // ==========================================
 builder.Services.AddControllers();
+
+builder.Services.AddDataProtection()
+    .PersistKeysToDbContext<ApplicationDbContext>();
 
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
                      ?? new[] { "http://localhost:3000" };
@@ -139,6 +144,18 @@ if (!app.Environment.IsDevelopment())
 
 app.UseRequestLocalization();
 app.UseStaticFiles();
+
+
+
+var forwardedOptions = new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+};
+forwardedOptions.KnownNetworks.Clear();
+forwardedOptions.KnownProxies.Clear();
+
+app.UseForwardedHeaders(forwardedOptions);
+
 app.UseRouting();
 
 app.UseCors("AllowNextJs");

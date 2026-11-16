@@ -103,6 +103,8 @@ namespace Test_ONUS.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("SquadraId");
+
                     b.ToTable("Parametri");
 
                     b.HasData(
@@ -151,12 +153,14 @@ namespace Test_ONUS.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("GoogleId")
+                        .HasColumnType("text");
+
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Password")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("ResetToken")
@@ -169,6 +173,9 @@ namespace Test_ONUS.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
 
                     b.HasIndex("SquadraId");
 
@@ -200,6 +207,8 @@ namespace Test_ONUS.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AtletaId", "Data");
+
                     b.ToTable("Sessioni");
                 });
 
@@ -228,7 +237,8 @@ namespace Test_ONUS.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AtletaId");
+                    b.HasIndex("AtletaId", "Endpoint")
+                        .IsUnique();
 
                     b.ToTable("SottoscrizioniPush");
                 });
@@ -271,7 +281,8 @@ namespace Test_ONUS.Migrations
 
                     b.HasIndex("ParametroId");
 
-                    b.HasIndex("SessioneId");
+                    b.HasIndex("SessioneId", "ParametroId")
+                        .IsUnique();
 
                     b.ToTable("ValoriSessione");
                 });
@@ -287,6 +298,15 @@ namespace Test_ONUS.Migrations
                     b.Navigation("Squadra");
                 });
 
+            modelBuilder.Entity("Test_ONUS.Models.Parametro", b =>
+                {
+                    b.HasOne("Test_ONUS.Models.Squadra", "Squadra")
+                        .WithMany()
+                        .HasForeignKey("SquadraId");
+
+                    b.Navigation("Squadra");
+                });
+
             modelBuilder.Entity("Test_ONUS.Models.PreparatoreAtletico", b =>
                 {
                     b.HasOne("Test_ONUS.Models.Squadra", "Squadra")
@@ -298,10 +318,21 @@ namespace Test_ONUS.Migrations
                     b.Navigation("Squadra");
                 });
 
+            modelBuilder.Entity("Test_ONUS.Models.SessioneAllenamento", b =>
+                {
+                    b.HasOne("Test_ONUS.Models.Atleta", "Atleta")
+                        .WithMany("Sessioni")
+                        .HasForeignKey("AtletaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Atleta");
+                });
+
             modelBuilder.Entity("Test_ONUS.Models.SottoscrizionePush", b =>
                 {
                     b.HasOne("Test_ONUS.Models.Atleta", "Atleta")
-                        .WithMany()
+                        .WithMany("SottoscrizioniPush")
                         .HasForeignKey("AtletaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -326,6 +357,13 @@ namespace Test_ONUS.Migrations
                     b.Navigation("Parametro");
 
                     b.Navigation("Sessione");
+                });
+
+            modelBuilder.Entity("Test_ONUS.Models.Atleta", b =>
+                {
+                    b.Navigation("Sessioni");
+
+                    b.Navigation("SottoscrizioniPush");
                 });
 
             modelBuilder.Entity("Test_ONUS.Models.SessioneAllenamento", b =>
