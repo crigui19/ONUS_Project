@@ -36,11 +36,11 @@ namespace Test_ONUS.Pages
         }
 
         public async Task<IActionResult> OnPostSaveAsync(
-     int Id,
-     string Nome,
-     int ValoreMinimo,
-     int ValoreMassimo,
-     bool IsAttivo)
+            int Id,
+            string Nome,
+            int ValoreMinimo,
+            int ValoreMassimo,
+            bool IsAttivo)
         {
             if (HttpContext.Session.GetString("Ruolo") != "Staff")
                 return RedirectToPage("/Index");
@@ -55,13 +55,19 @@ namespace Test_ONUS.Pages
                 return RedirectToPage();
             }
 
+            var nomePulito = Nome.Trim();
+
+            if (nomePulito.Equals("RPE", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["Errore"] = "Il nome 'RPE' è riservato al parametro di sistema.";
+                return RedirectToPage();
+            }
+
             if (ValoreMinimo >= ValoreMassimo)
             {
                 TempData["Errore"] = "Il valore minimo deve essere inferiore al valore massimo.";
                 return RedirectToPage();
             }
-
-            var nomePulito = Nome.Trim();
 
             if (IsAttivo)
             {
@@ -75,18 +81,19 @@ namespace Test_ONUS.Pages
                 }
             }
 
+            bool nomeDuplicato = await _context.Parametri.AnyAsync(p =>
+                p.Id != Id
+                && (p.SquadraId == null || p.SquadraId == squadraId.Value)
+                && p.Nome.ToLower() == nomePulito.ToLower());
+
+            if (nomeDuplicato)
+            {
+                TempData["Errore"] = $"Esiste già un parametro chiamato '{nomePulito}'.";
+                return RedirectToPage();
+            }
+
             if (Id == 0)
             {
-                bool nomeDuplicato = await _context.Parametri.AnyAsync(p =>
-                    (p.SquadraId == null || p.SquadraId == squadraId.Value)
-                    && p.Nome.ToLower() == nomePulito.ToLower());
-
-                if (nomeDuplicato)
-                {
-                    TempData["Errore"] = $"Esiste già un parametro chiamato '{nomePulito}'.";
-                    return RedirectToPage();
-                }
-
                 var nuovo = new Parametro
                 {
                     Nome = nomePulito,
@@ -104,13 +111,14 @@ namespace Test_ONUS.Pages
                 if (esistente == null)
                     return NotFound();
 
-                if (esistente.SquadraId == null)
+                // Blocca la modifica solo per RPE
+                if (esistente.IsCalcoloCarico || esistente.Nome.Equals("RPE", StringComparison.OrdinalIgnoreCase))
                 {
-                    TempData["Errore"] = "Non puoi modificare i parametri di sistema. Creane uno personalizzato.";
+                    TempData["Errore"] = "Il parametro RPE è obbligatorio per il calcolo del carico e non può essere modificato.";
                     return RedirectToPage();
                 }
 
-                if (esistente.SquadraId != squadraId.Value)
+                if (esistente.SquadraId != null && esistente.SquadraId != squadraId.Value)
                     return Forbid();
 
                 esistente.Nome = nomePulito;
@@ -134,23 +142,33 @@ namespace Test_ONUS.Pages
             if (squadraId == null)
                 return RedirectToPage("/Login");
 
-            var param = await _context.Parametri.FindAsync(id);
-            if (param == null)
+            var parametro = await _context.Parametri.FindAsync(id);
+            if (parametro == null)
                 return NotFound();
 
-            if (param.SquadraId == null)
+            // Impedisce in ogni caso l'eliminazione di RPE
+            if (parametro.IsCalcoloCarico || parametro.Nome.Equals("RPE", StringComparison.OrdinalIgnoreCase))
             {
-                TempData["Errore"] = "Impossibile disattivare un parametro di sistema.";
+                TempData["Errore"] = "Il parametro RPE è obbligatorio per il calcolo del carico e non può essere eliminato.";
                 return RedirectToPage();
             }
 
-            if (param.SquadraId != squadraId.Value)
+            if (parametro.SquadraId != null && parametro.SquadraId != squadraId.Value)
                 return Forbid();
 
-            param.IsAttivo = false;
+            var valoriCollegati = await _context.ValoriSessione
+                .Where(v => v.ParametroId == id)
+                .ToListAsync();
+
+            if (valoriCollegati.Any())
+            {
+                _context.ValoriSessione.RemoveRange(valoriCollegati);
+            }
+
+            _context.Parametri.Remove(parametro);
             await _context.SaveChangesAsync();
 
-            TempData["MessaggioSuccesso"] = $"Parametro '{param.Nome}' disattivato.";
+            TempData["MessaggioSuccesso"] = $"Parametro '{parametro.Nome}' eliminato correttamente.";
             return RedirectToPage();
         }
     }
