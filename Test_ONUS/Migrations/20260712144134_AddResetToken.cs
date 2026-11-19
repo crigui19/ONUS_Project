@@ -17,9 +17,7 @@ namespace Test_ONUS.Migrations
                 name: "FK_Sessioni_Atleti_AtletaId",
                 table: "Sessioni");
 
-            migrationBuilder.DropIndex(
-                name: "IX_Sessioni_AtletaId",
-                table: "Sessioni");
+            migrationBuilder.Sql(@"DROP INDEX IF EXISTS ""IX_Sessioni_AtletaId"";");
 
             migrationBuilder.DropPrimaryKey(
                 name: "PK_Preparatori",
