@@ -36,12 +36,11 @@ namespace Test_ONUS.Pages
         }
 
         public async Task<IActionResult> OnPostSaveAsync(
-            int Id,
-            string Nome,
-            int ValoreMinimo,
-            int ValoreMassimo,
-            bool IsCalcoloCarico,
-            bool IsAttivo)
+     int Id,
+     string Nome,
+     int ValoreMinimo,
+     int ValoreMassimo,
+     bool IsAttivo)
         {
             if (HttpContext.Session.GetString("Ruolo") != "Staff")
                 return RedirectToPage("/Index");
@@ -76,22 +75,8 @@ namespace Test_ONUS.Pages
                 }
             }
 
-            // Disattiva IsCalcoloCarico SOLO sugli altri parametri custom della stessa squadra (mai sui globali!)
-            if (IsCalcoloCarico)
-            {
-                var altriCustomCarico = await _context.Parametri
-                    .Where(p => p.IsCalcoloCarico && p.Id != Id && p.SquadraId == squadraId.Value)
-                    .ToListAsync();
-
-                foreach (var p in altriCustomCarico)
-                {
-                    p.IsCalcoloCarico = false;
-                }
-            }
-
             if (Id == 0)
             {
-                // Evita duplicati di nome nella stessa squadra o rispetto ai globali
                 bool nomeDuplicato = await _context.Parametri.AnyAsync(p =>
                     (p.SquadraId == null || p.SquadraId == squadraId.Value)
                     && p.Nome.ToLower() == nomePulito.ToLower());
@@ -107,7 +92,7 @@ namespace Test_ONUS.Pages
                     Nome = nomePulito,
                     ValoreMinimo = ValoreMinimo,
                     ValoreMassimo = ValoreMassimo,
-                    IsCalcoloCarico = IsCalcoloCarico,
+                    IsCalcoloCarico = false,
                     IsAttivo = IsAttivo,
                     SquadraId = squadraId.Value
                 };
@@ -131,7 +116,7 @@ namespace Test_ONUS.Pages
                 esistente.Nome = nomePulito;
                 esistente.ValoreMinimo = ValoreMinimo;
                 esistente.ValoreMassimo = ValoreMassimo;
-                esistente.IsCalcoloCarico = IsCalcoloCarico;
+                esistente.IsCalcoloCarico = false;
                 esistente.IsAttivo = IsAttivo;
             }
 

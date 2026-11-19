@@ -14,11 +14,19 @@
         </div>
     }
 
+    @if (TempData["MessaggioSuccesso"] != null)
+    {
+        <div class="alert bg-success bg-opacity-25 border border-success text-white fw-bold shadow-sm mb-4 d-flex align-items-center rounded-3">
+            <i class="bi bi-check-circle-fill fs-4 me-3" style="color: var(--onus-green);"></i>
+            @TempData["MessaggioSuccesso"]
+        </div>
+    }
+
     <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary pb-3">
         <h2 class="text-white fw-bold text-uppercase tracking-wide border-start border-4 ps-3 m-0" style="border-color: var(--onus-blue) !important;">
             <span class="text-gradient-onus">Parameter</span> Management
         </h2>
-        <button class="btn btn-onus rounded-pill fw-bold shadow-lg px-4" onclick="apriModale(0, '', 0, 10, false, true)">
+        <button class="btn btn-onus rounded-pill fw-bold shadow-lg px-4" onclick="apriModale(0, '', 0, 10, true)">
             <i class="bi bi-plus-lg me-1"></i> NEW PARAMETER
         </button>
     </div>
@@ -39,10 +47,7 @@
                 <tbody>
                     @foreach (var p in Model.Parametri)
                     {
-                        // Identify if it's a fixed system parameter
-                        bool isFisso = (p.Nome.Equals("RPE", StringComparison.OrdinalIgnoreCase) ||
-                                        p.Nome.Contains("Sonno", StringComparison.OrdinalIgnoreCase) ||
-                                        p.Nome.Equals("Stress", StringComparison.OrdinalIgnoreCase));
+                        bool isFisso = (p.SquadraId == null);
 
                         <tr style="border-bottom: 1px solid #333;">
                             <td class="ps-4 fw-bold text-white fs-5">@p.Nome</td>
@@ -89,7 +94,7 @@
                                 else
                                 {
                                     <button class="btn btn-sm btn-outline-onus rounded-pill px-3 shadow-sm"
-                                            onclick="apriModale(@p.Id, '@Html.Raw(p.Nome.Replace("'", "\\'"))', @p.ValoreMinimo, @p.ValoreMassimo, @(p.IsCalcoloCarico.ToString().ToLower()), @(p.IsAttivo.ToString().ToLower()))">
+                                            onclick="apriModale(@p.Id, '@Html.Raw(p.Nome.Replace("'", "\\'"))', @p.ValoreMinimo, @p.ValoreMassimo, @(p.IsAttivo.ToString().ToLower()))">
                                         <i class="bi bi-pencil-square me-1"></i> Edit
                                     </button>
                                 }
@@ -116,27 +121,17 @@
 
                     <div class="form-floating mb-3">
                         <input type="text" id="pNome" name="Nome" class="form-control bg-black text-white border-secondary shadow-sm fw-bold" placeholder="Name" required />
-                        <label for="pNome" class="text-white-50">Parameter Name (e.g. Hydration)</label>
+                        <label for="pNome">Parameter Name (e.g. Hydration)</label>
                     </div>
 
                     <div class="row g-3 mb-4">
                         <div class="col-6 form-floating">
                             <input type="number" id="pMin" name="ValoreMinimo" class="form-control bg-black text-white border-secondary shadow-sm text-center fs-5" value="0" required />
-                            <label for="pMin" class="text-white-50 ms-2">Minimum Value</label>
+                            <label for="pMin" class="ms-2">Minimum Value</label>
                         </div>
                         <div class="col-6 form-floating">
                             <input type="number" id="pMax" name="ValoreMassimo" class="form-control bg-black text-white border-secondary shadow-sm text-center fs-5" value="10" required />
-                            <label for="pMax" class="text-white-50 ms-2">Maximum Value</label>
-                        </div>
-                    </div>
-
-                    <div class="form-check form-switch mb-3 p-3 rounded-3 bg-black border shadow-sm d-flex align-items-center gap-3" style="border-color: rgba(0, 160, 255, 0.3) !important;">
-                        <input class="form-check-input mt-0" type="checkbox" id="pIsCalcoloCarico" name="IsCalcoloCarico" value="true" style="transform: scale(1.3);">
-                        <div>
-                            <label class="form-check-label fw-bold" style="color: var(--onus-blue);" for="pIsCalcoloCarico">
-                                Use for Load Calculation (RPE)
-                            </label>
-                            <div class="small text-white-50 mt-1" style="font-size: 0.85em; line-height: 1.2;">If active, this parameter will be multiplied by session duration to calculate Player Load.</div>
+                            <label for="pMax" class="ms-2">Maximum Value</label>
                         </div>
                     </div>
 
@@ -158,13 +153,11 @@
 
 @section Scripts {
     <script>
-        function apriModale(id, nome, min, max, isCalcolo, isAttivo) {
+        function apriModale(id, nome, min, max, isAttivo) {
             document.getElementById('pId').value = id;
             document.getElementById('pNome').value = nome;
             document.getElementById('pMin').value = min;
             document.getElementById('pMax').value = max;
-
-            document.getElementById('pIsCalcoloCarico').checked = isCalcolo;
             document.getElementById('pIsAttivo').checked = isAttivo;
 
             document.getElementById('modalTitle').innerText = id === 0 ? "NEW PARAMETER" : "EDIT " + nome.toUpperCase();

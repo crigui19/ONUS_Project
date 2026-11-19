@@ -1,75 +1,177 @@
-html {
-  font-size: 14px;
-}
-
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
-}
-
-body {
-  margin-bottom: 60px;
-}
-
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
-}
-
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
-}
+/* ==========================================
+   1. VARIABILI GLOBALI & IDENTITÀ ONUS
+   ========================================== */
 :root {
     --bg-dark: #121212;
     --bg-card: #1e1e1e;
-    --text-main: #e0e0e0;
-    --text-muted: #a0a0a0;
+    --bg-input: #12161d;
+    --border-subtle: #333b48;
+    --text-main: #f0f2f5;
+    --text-muted: #a0aab8;
+    --onus-green: #71d92d;
+    --onus-blue: #00a0ff;
     --accent-red: #ff4757;
-    --accent-blue: #3742fa;
-    --accent-glow: rgba(255, 71, 87, 0.3);
-    --glass: rgba(30, 30, 30, 0.7);
+    --accent-glow: rgba(0, 160, 255, 0.35);
+}
+
+html {
+    font-size: 14px;
+    position: relative;
+    min-height: 100%;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
 }
 
 body {
     background-color: var(--bg-dark);
     color: var(--text-main);
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    margin-bottom: 60px;
 }
 
-/* === NAVBAR === */
+/* ==========================================
+   2. FIX GLOBALE INPUT, TEXTBOX, SELECT & LABEL
+   ========================================== */
+.form-control,
+.form-select,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+input[type="time"],
+textarea,
+select {
+    background-color: var(--bg-input) !important;
+    color: #ffffff !important;
+    border: 1px solid var(--border-subtle) !important;
+}
+
+    .form-control::placeholder,
+    textarea::placeholder {
+        color: #7c8798 !important;
+        opacity: 1;
+    }
+
+    .form-control:focus,
+    .form-select:focus,
+    .form-check-input:focus {
+        background-color: #161c26 !important;
+        color: #ffffff !important;
+        border-color: var(--onus-blue) !important;
+        box-shadow: 0 0 0 0.2rem rgba(0, 160, 255, 0.25) !important;
+    }
+
+/* Fix label standard e Form Floating di Bootstrap 5 */
+label,
+.form-label {
+    color: var(--text-muted);
+}
+
+.form-floating > label {
+    color: var(--text-muted) !important;
+}
+
+    .form-floating > label::after {
+        background-color: transparent !important;
+    }
+
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label,
+.form-floating > .form-select ~ label {
+    color: var(--onus-blue) !important;
+    background-color: transparent !important;
+}
+
+/* Fix sfondo bianco su autocompilazione Chrome / Safari / Edge */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+    -webkit-text-fill-color: #ffffff !important;
+    -webkit-box-shadow: 0 0 0 1000px var(--bg-input) inset !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+/* ==========================================
+   3. BRANDING, TESTI & BOTTONI ONUS
+   ========================================== */
+.text-gradient-onus {
+    background: linear-gradient(90deg, var(--onus-green), var(--onus-blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+}
+
+.btn-onus {
+    background: linear-gradient(90deg, var(--onus-green), var(--onus-blue));
+    color: #121212 !important;
+    border: none;
+    font-weight: bold;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+    .btn-onus:hover {
+        transform: scale(1.03);
+        box-shadow: 0 4px 15px rgba(0, 160, 255, 0.4);
+    }
+
+.btn-outline-onus {
+    background: transparent;
+    color: var(--onus-blue);
+    border: 2px solid var(--onus-blue);
+    font-weight: bold;
+    transition: all 0.25s;
+}
+
+    .btn-outline-onus:hover {
+        background: var(--onus-blue);
+        color: #121212 !important;
+        box-shadow: 0 0 10px var(--onus-blue);
+    }
+
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 160, 255, 0.35);
+}
+
+.text-primary {
+    color: var(--onus-blue) !important;
+}
+
+.text-danger {
+    color: var(--accent-red) !important;
+}
+
+.tracking-wide {
+    letter-spacing: 4px;
+}
+
+/* ==========================================
+   4. NAVBAR, CARD & MODALI
+   ========================================== */
 .navbar {
     background-color: var(--bg-card) !important;
     border-bottom: 1px solid #333;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-}
-
-.navbar-brand {
-    color: var(--accent-red) !important;
-    font-weight: 800;
-    letter-spacing: 1px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
 .nav-link {
     color: var(--text-main) !important;
     font-weight: 500;
-    transition: color 0.3s;
+    transition: color 0.25s;
 }
 
     .nav-link:hover {
-        color: var(--accent-red) !important;
+        color: var(--onus-blue) !important;
     }
 
-/* === CARDS & TILES === */
 .card {
     background-color: var(--bg-card);
     border: 1px solid #333;
@@ -89,55 +191,53 @@ body {
     .player-tile:hover {
         transform: translateY(-5px);
         box-shadow: 0 10px 20px var(--accent-glow);
-        border-color: var(--accent-red);
+        border-color: var(--onus-blue);
     }
 
-    .player-tile img {
-        border: 3px solid #333;
-        transition: border-color 0.3s;
-    }
-
-    .player-tile:hover img {
-        border-color: var(--accent-red);
-    }
-
-/* === MODAL (Glass Effect) === */
 .modal-content {
-    background-color: rgba(30, 30, 30, 0.95);
+    background-color: rgba(24, 28, 36, 0.97);
     backdrop-filter: blur(10px);
     border: 1px solid #444;
-    box-shadow: 0 0 50px rgba(0,0,0,0.8);
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+    color: var(--text-main);
 }
 
-/* === INPUT BUTTONS === */
+/* ==========================================
+   5. DASHBOARD: PARAMETRI & TASTIERINO
+   ========================================== */
 .param-btn {
-    background-color: #2c2c2c;
-    border: 1px solid #444;
+    background-color: #14181f;
+    border: 1px solid #2c333f;
     color: var(--text-main);
     border-radius: 12px;
-    transition: all 0.2s ease;
+    cursor: pointer;
+    transition: all 0.22s ease-in-out;
 }
 
     .param-btn:hover {
-        background-color: #3a3a3a;
-        border-color: #666;
+        background-color: #1c222d;
+        border-color: #4a5568;
     }
 
     .param-btn.active {
-        background-color: rgba(255, 71, 87, 0.15);
-        border-color: var(--accent-red);
-        color: var(--accent-red);
-        box-shadow: 0 0 15px var(--accent-glow);
+        background: linear-gradient(135deg, rgba(0, 160, 255, 0.22), rgba(113, 217, 45, 0.12));
+        border-color: var(--onus-blue);
+        box-shadow: 0 0 18px rgba(0, 160, 255, 0.45), inset 0 0 12px rgba(0, 160, 255, 0.15);
+        transform: translateX(4px);
     }
 
-/* === NUMPAD === */
+    .param-btn.filled:not(.active) {
+        background-color: rgba(113, 217, 45, 0.08);
+        border-color: rgba(113, 217, 45, 0.55);
+    }
+
 .numpad-btn {
     background-color: #2c2c2c;
     border: none;
     color: white;
     border-radius: 10px;
     transition: transform 0.1s, background-color 0.2s;
-    box-shadow: 0 4px 0 #1a1a1a; /* 3D effect */
+    box-shadow: 0 4px 0 #1a1a1a;
 }
 
     .numpad-btn:active {
@@ -150,7 +250,9 @@ body {
         color: white;
     }
 
-/* === ANALISI PAGE === */
+/* ==========================================
+   6. ANALISI, TABELLE & LANDING PAGE
+   ========================================== */
 .chart-container {
     background: var(--bg-card);
     padding: 20px;
@@ -159,43 +261,52 @@ body {
 }
 
 .acwr-box {
-    background: linear-gradient(135deg, var(--accent-blue), #1e272e);
+    background: linear-gradient(135deg, var(--onus-blue), #1e272e);
     border: none;
     border-radius: 16px;
 }
 
-/* Table Restyling */
 .table-dark {
-    background-color: #2c2c2c;
+    background-color: #1e1e1e;
 }
 
 .table {
     color: var(--text-main);
-    border-color: #444;
+    border-color: #333;
 }
 
 .table-hover tbody tr:hover {
     color: white;
-    background-color: #333;
+    background-color: #2a2f3a;
 }
 
-/* Text Utilities */
-.text-primary {
-    color: var(--accent-blue) !important;
+.hero-section {
+    background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+    border: 1px solid #333;
+    animation: fadeIn 1s ease-in-out;
 }
 
-.text-danger {
-    color: var(--accent-red) !important;
+.feature-box {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
-/* === LOADING SCREEN === */
+
+    .feature-box:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 10px 30px rgba(0, 160, 255, 0.2) !important;
+        border-color: var(--onus-blue) !important;
+    }
+
+/* ==========================================
+   7. LOADER & ANIMAZIONI
+   ========================================== */
 #loading-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: #121212; /* Stesso colore di sfondo dell'app */
-    z-index: 9999; /* Assicura che sia sopra tutto */
+    background-color: var(--bg-dark);
+    z-index: 9999;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -204,13 +315,14 @@ body {
 }
 
 .loader {
-    width: 50px;
-    height: 50px;
     border: 5px solid rgba(255, 255, 255, 0.1);
-    border-top: 5px solid #ff4757; /* Rosso ONUS */
+    border-top: 5px solid var(--onus-green);
+    border-bottom: 5px solid var(--onus-blue);
     border-radius: 50%;
+    width: 60px;
+    height: 60px;
     animation: spin 1s linear infinite;
-    margin-bottom: 20px;
+    margin: 0 auto 15px auto;
 }
 
 .loading-text {
@@ -219,6 +331,11 @@ body {
     letter-spacing: 2px;
     font-size: 1.2rem;
     animation: pulse 1.5s infinite ease-in-out;
+}
+
+.loaded {
+    opacity: 0;
+    pointer-events: none;
 }
 
 @keyframes spin {
@@ -245,32 +362,6 @@ body {
     }
 }
 
-/* Classe per nascondere il loader */
-.loaded {
-    opacity: 0;
-    pointer-events: none; /* Permette di cliccare sotto anche se l'opacity è 0 */
-}
-/* === LANDING PAGE STYLES === */
-.hero-section {
-    background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
-    border: 1px solid #333;
-    animation: fadeIn 1s ease-in-out;
-}
-
-.feature-box {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-    .feature-box:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 10px 30px rgba(255, 71, 87, 0.2) !important;
-        border-color: var(--accent-red) !important;
-    }
-
-.tracking-wide {
-    letter-spacing: 5px;
-}
-
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -281,62 +372,4 @@ body {
         opacity: 1;
         transform: translateY(0);
     }
-}
-
-/* ==========================================
-   NUOVA IDENTITÀ VISIVA ONUS (VERDE/AZZURRO)
-   ========================================== */
-
-:root {
-    --onus-green: #71d92d; /* Verde fluo del logo */
-    --onus-blue: #00a0ff; /* Azzurro del logo */
-}
-
-/* Testo con gradiente (per i titoli principali) */
-.text-gradient-onus {
-    background: linear-gradient(90deg, var(--onus-green), var(--onus-blue));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    display: inline-block;
-}
-
-/* Bottone principale con gradiente */
-.btn-onus {
-    background: linear-gradient(90deg, var(--onus-green), var(--onus-blue));
-    color: #121212 !important; /* Testo scuro sul bottone acceso per contrasto */
-    border: none;
-    font-weight: bold;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-    .btn-onus:hover {
-        transform: scale(1.05);
-        box-shadow: 0 4px 15px rgba(0, 160, 255, 0.4);
-    }
-
-/* Bottone secondario (solo contorno colorato) */
-.btn-outline-onus {
-    background: transparent;
-    color: var(--onus-blue);
-    border: 2px solid var(--onus-blue);
-    font-weight: bold;
-    transition: all 0.3s;
-}
-
-    .btn-outline-onus:hover {
-        background: var(--onus-blue);
-        color: #121212;
-        box-shadow: 0 0 10px var(--onus-blue);
-    }
-
-/* Aggiorniamo il loader nero e rosso con i nuovi colori */
-.loader {
-    border: 5px solid rgba(255, 255, 255, 0.1);
-    border-top: 5px solid var(--onus-green);
-    border-bottom: 5px solid var(--onus-blue);
-    border-radius: 50%;
-    width: 60px;
-    height: 60px;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 15px auto;
 }

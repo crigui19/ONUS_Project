@@ -104,10 +104,9 @@
                         <div class="col-md-6 d-flex flex-column gap-2">
                             @foreach (var param in Model.ParametriDashboard)
                             {
-                                <div class="param-btn d-flex justify-content-between align-items-center bg-black border border-secondary rounded-3 p-3"
+                                <div class="param-btn d-flex justify-content-between align-items-center p-3"
                                      id="btn_@param.Id"
-                                     onclick="selezionaCampo(@param.Id)"
-                                     style="cursor: pointer; transition: all 0.2s;">
+                                     onclick="selezionaCampo(@param.Id)">
                                     <span class="fs-5">
                                         @if (param.IsCalcoloCarico)
                                         {
@@ -115,7 +114,6 @@
                                         }
                                         else
                                         {
-
                                             <span>📊</span>
                                         }
                                         @param.Nome
@@ -231,14 +229,16 @@
         paramIds.forEach(pid => {
             let valInput = document.getElementById('val_' + pid);
             let displaySpan = document.getElementById('display_' + pid);
-            if(valInput) valInput.value = '';
-            if(displaySpan) displaySpan.innerText = '-';
+            let btn = document.getElementById('btn_' + pid);
+            if (valInput) valInput.value = '';
+            if (displaySpan) displaySpan.innerText = '-';
+            if (btn) btn.classList.remove('active', 'filled');
         });
 
         var linkGrafici = document.getElementById('btnVediGrafici');
-        if(linkGrafici) linkGrafici.href = '/Analisi?atletaId=' + id;
+        if (linkGrafici) linkGrafici.href = '/Analisi?atletaId=' + id;
 
-        if(paramIds.length > 0) {
+        if (paramIds.length > 0) {
             selezionaCampo(paramIds[0]);
         }
 
@@ -249,13 +249,11 @@
     function selezionaCampo(id) {
         currentParamId = id;
         document.querySelectorAll('.param-btn').forEach(el => {
-            el.style.borderColor = '#6c757d';
-            el.style.backgroundColor = 'black';
+            el.classList.remove('active');
         });
         var btn = document.getElementById('btn_' + id);
-        if(btn) {
-            btn.style.borderColor = 'var(--onus-green)';
-            btn.style.backgroundColor = '#1a1a1a';
+        if (btn) {
+            btn.classList.add('active');
         }
     }
 
@@ -263,14 +261,12 @@
         if (currentParamId === null) return;
         let hiddenInput = document.getElementById('val_' + currentParamId);
         let displaySpan = document.getElementById('display_' + currentParamId);
+        let btn = document.getElementById('btn_' + currentParamId);
 
-        // LEGGE IL MASSIMO DINAMICO IMPOSTATO NEL DATABASE (se non c'è, usa 10 di default)
         let maxVal = parseInt(hiddenInput.getAttribute('data-max')) || 10;
-
         let valAttuale = hiddenInput.value;
         let nuovoValore = valAttuale + num.toString();
 
-        // CONTROLLO SUL MASSIMO DINAMICO INVECE CHE SUL "10" FISSO
         if (parseInt(nuovoValore) <= maxVal) {
             hiddenInput.value = nuovoValore;
             displaySpan.innerText = nuovoValore;
@@ -278,14 +274,21 @@
             hiddenInput.value = num;
             displaySpan.innerText = num;
         }
+
+        if (btn && hiddenInput.value !== '') {
+            btn.classList.add('filled');
+        }
     }
-        
+
     function cancella() {
-        if(currentParamId === null) return;
+        if (currentParamId === null) return;
         let hiddenInput = document.getElementById('val_' + currentParamId);
         let displaySpan = document.getElementById('display_' + currentParamId);
+        let btn = document.getElementById('btn_' + currentParamId);
+
         hiddenInput.value = '';
         displaySpan.innerText = '-';
+        if (btn) btn.classList.remove('filled');
     }
 
     function prossimoCampo() {
